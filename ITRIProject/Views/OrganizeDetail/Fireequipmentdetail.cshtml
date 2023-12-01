@@ -1,0 +1,213 @@
+﻿@model ITRIProject.Models.View.Fireequipmentdetail
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = null;
+    Layout = "~/Views/Shared/Organize/_Organizedetail.cshtml";
+    int monthcount = ViewBag.monthcount;
+    int year = ViewBag.year - 1911;
+    int month = ViewBag.month;
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+
+@section Scripts{
+    <script nonce="@nonce" src="~/js/site1.js" asp-append-version="true"></script>
+    <script nonce="@nonce">
+
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const basicid = urlParams.get('BasicId');//抓取basicid
+        const id = urlParams.get('id');//抓取basicid
+
+        // 在控制台上輸出id，以驗證是否成功抓取到id
+        $(document).ready(function () {
+            sumtotal();
+
+            $("#Fireequipmentdetail").submit(function (event) {
+                var isValid = $("#Fireequipmentdetail").validate().form();//檢查必填欄位是否都有填，沒有則跳出
+                if (!isValid) {
+                    return false;
+                }
+                event.preventDefault(); // 防止表單的預設提交行為
+
+
+                var formData = new FormData($(this)[0]); // 將整個表單數據轉換為 FormData
+
+                $.ajax({
+                    url: "/OrganizeDetail/Fireequipmentdetail/" + id,
+                    type: "POST",
+                    data: formData, // 將表單數據和驗證碼傳遞到後端
+                    processData: false,
+                    contentType: false,
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.nologin) {
+                            alert("請先登入")
+                            window.close();
+                        }
+                        else if (response.success) {
+                            // 登入成功，執行相應的操作
+                            window.close();
+
+                        } else {
+                            // 登入失敗，處理錯誤回應
+                            alert(response.error);
+                        }
+                    },
+
+                });
+
+
+            });
+        });
+
+
+        //總量加總
+        let total = 0;
+        function sumtotal(inputElement) {
+            let numInputs = document.querySelectorAll('input[name^="Num"]');
+
+            total = 0; // 重置 total 为 0
+            for (let i = 0; i < numInputs.length; i++) {
+                let last = numInputs.length - 1;
+                let value = parseFloat(numInputs[i].value);
+                if (!isNaN(value)) {
+                    //第一筆做運算
+                    total += value;
+
+
+                }
+            }
+            $('#TotalNum').val(total.toFixed(2));
+        }
+    </script>
+}
+
+
+
+<style nonce="@nonce">
+    span {
+        color: red;
+    }
+</style>
+
+
+<form asp-action="Fireequipmentdetail" id="Fireequipmentdetail">
+
+    <table border="1" style="width: 100%; border-collapse:collapse;" id="myTable" class="table-responsive fixed-table">
+
+
+        <tr class="theadcolor">
+            <th>年/月</th>
+            @for (int i = 0; i < monthcount; i++)
+            {
+
+                //如果月份大於12年分加1，月份從1開始
+                if (month > 12)
+                {
+                    year += 1;
+                    month = 1;
+                }
+
+                <th>
+                    <input type="text" name="DateTimes" value="@year / @month" readonly style="border: none; background-color: transparent; outline: none; cursor: default;" />
+                </th>
+
+
+
+                month++;
+
+            }
+
+            <th><span style='color: red;'>*</span>單位</th>
+        </tr>
+
+        @{
+            int numyear = ViewBag.year - 1911;
+            int nummonth = ViewBag.month;
+        }
+        <tr class="theadcolor">
+            <th>數值</th>
+
+            @for (int i = 0; i < monthcount; i++)
+            {
+
+                if (nummonth > 12)
+                {
+                    numyear += 1;
+                    nummonth = 1;
+                }
+                @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)
+                {
+                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == numyear + " / " + (nummonth))
+                    {
+                        <td><input type="text" name="Num" class="sumtotal" value="@Model.DIntervalusetotals_Num[j]?.Num" /></td>
+                        break;
+                    }
+                    if (j == Model.DIntervalusetotals_DateTime?.Count - 1)
+                    {
+                        <td><input type="text" name="Num" class="sumtotal" /></td>
+                    }
+                }
+                @if (Model.DIntervalusetotals_DateTime?.Count == 0)
+                {
+                    <td><input type="text" name="Num" class="sumtotal" /></td>
+                }
+                nummonth++;
+
+
+            }
+            <td rowspan="2">
+                <select name="Unit" id="Unit" style="width: 100%; height: 150px;">
+                    @foreach (var a in ViewBag.Unit)
+                    {
+                        if (Model.Unit?.Num == a.Code)
+                        {
+                            <option value="@a.Code" selected>@a.Name</option>
+
+                        }
+                        else
+                        {
+                            <option value="@a.Code">@a.Name</option>
+
+                        }
+                    }
+                </select>
+            </td>
+        </tr>
+        <tr class="theadcolor">
+            <th>總量</th>
+            <td colspan="@(monthcount)"><input type="text" id="TotalNum" name="TotalNum" value="0" readonly class="detailtotal textcenter" /></td>
+        </tr>
+    </table>
+    <br />
+
+    <table border="1" style="width: 100%; border-collapse:collapse;" id="myTable" class="table-responsive fixed-table">
+        <tr class="theadcolor">
+            <th><span style='color: red;'>*</span>管理單位</th>
+            <th><span style='color: red;'>*</span>負責人員</th>
+            <th><span style='color: red;'>*</span>數據來源</th>
+            <th>檔案上傳</th>
+
+        </tr>
+        <tr>
+            <td><input type="text" name="management" id="management" value="@Model.DDatasource?.Management" required title="請填寫管理單位"></td>
+            <td><input type="text" name="Principal" id="Principal" value="@Model.DDatasource?.Principal" required title="請填寫負責人員"></td>
+            <td><input type="text" name="Datasource" id="Datasource" value="@Model.DDatasource?.Datasource" required title="請填寫數據來源"></td>
+            <td>
+                <input multiple type="file" name="EvidenceFile" id="EvidenceFile">
+            </td>
+
+        </tr>
+    </table>
+
+    <br />
+    <div class="form-group textcenter">
+        <input type="text" value="@ViewBag.basicid" name="basicid" style="display:none" />
+        <a class="genbtn window-close">關閉</a>
+        <input type="submit" value="送出" class="genbtn" />
+
+    </div>
+</form>

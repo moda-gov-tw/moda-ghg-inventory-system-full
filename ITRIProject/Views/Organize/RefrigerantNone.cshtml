@@ -1,0 +1,304 @@
+﻿@using Newtonsoft.Json;
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@{
+    ViewData["Title"] = "冷媒逸散";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+
+@section Scripts {
+
+    <script nonce="@nonce">
+
+        //工廠選項
+        var factory = @Html.Raw(ViewBag.Factory);
+        var factoryItems = factory.map(function (item) {
+            return { name: item.Name, value: item.Id };
+        });
+        //種類選項
+        var equipmenttype = @Html.Raw(ViewBag.EquipmentType);
+        var equipmenttypeItems = equipmenttype.map(function (item) {
+            return { name: item.Name, value: item.Code };
+        });
+        //冷媒種類
+        var Refrigerant = @Html.Raw(ViewBag.Refrigerant);
+        var RefrigerantItems = Refrigerant.map(function (item) {
+            return { name: item.Name, value: item.Id };
+        });
+
+        var url = new URL(window.location.href);
+        var basicid = url.pathname.split('/').pop(); // 從 URL 的路徑部分中獲取最後一個值作為 id
+        console.log(@Html.Raw(ViewBag.DeatilsJson));
+        $("#table1").jsGrid({
+
+                inserting: true,
+                editing: true,
+
+            sorting: true,
+            paging: false,
+            rownumbers: true,
+            pageLoading: false,
+            autoload: false,
+            width: "100%",
+            height: "100%",
+            data: @Html.Raw(ViewBag.DeatilsJson),//如果data有值，一載入時顯示
+            //rowClick: function (args) {
+            //    // 點擊行時的處理邏輯
+            //    console.log("Clicked row: ", args.item);
+            //},
+            controller: {
+            //載入
+            loadData: function (filter) {
+                return $.ajax({
+                    type: "GET",
+                    url: "/Tools/RefrigerantNone?basicid=" + basicid + "&&type=LoadData",
+                    dataType: "json",
+                    data: filter
+                }).done(function (response) {
+                    if (response.success === false) {
+                        alert(response.error);
+                        window.location.href = "/Member/Login"; // 導向錯誤頁面
+                    }
+                });
+            },
+            //新增
+            insertItem: function (item) {
+                return $.ajax({
+                    type: "POST",
+                    url: "/Tools/RefrigerantNone?basicid=" + basicid + "&&type=add",
+                    data: item
+                }).done(function (response) {
+                    $("#table1").jsGrid("loadData");
+                });
+            },
+            //修改
+            updateItem: function (item) {
+                return $.ajax({
+                    type: "POST",
+                    url: "/Tools/RefrigerantNone?basicid=" + basicid + "&&type=Edit",
+                    data: item,
+                }).done(function (response) {
+                    $("#table1").jsGrid("loadData");
+                });
+
+            },
+            //刪除
+            deleteItem: function (item) {
+                return $.ajax({
+                    type: "POST",
+                    url: "/Tools/RefrigerantNone?basicid=" + basicid + "&&type=delete",
+                    data: item
+                }).done(function (response) {
+                    $("#table1").jsGrid("loadData");
+                });
+            },
+        },
+            fields: [
+            { name: "sort", title: "編號", type: "rownumbers", width: 40, align: "center" },
+            { name: "factoryname", title: "<span style='color: red;'>*</span>場域", type: "select", items: factoryItems, valueField: "value", textField: "name", width: 60, align: "center" },
+            {
+                name: "equipmentname", title: "<span style='color: red;'>*</span>設備名稱", type: "text", type: "text", width: 60, align: "center", validate: [{
+                    validator: function (value, item) {
+                        return value !== null && value !== ""; // 檢查是否為非空值
+                    },
+                    message: "設備名稱為必填項目"
+                }]
+            },
+            { name: "equipmenttype", title: "<span style='color: red;'>*</span>設備類型", type: "select", items: equipmenttypeItems, valueField: "value", textField: "name", width: 60, align: "center" },
+            { name: "equipmentlocation", title: "設備位置", type: "text", valueField: "value", textField: "name", width: 60, align: "center" },
+            { name: "refrigeranttype", title: "<span style='color: red;'>*</span>冷媒種類", type: "select", width: 70, items: RefrigerantItems, valueField: "value", textField: "name", width: 60, align: "center" },
+            { name: "category", title: "類別", type: "text", width: 50, align: "center", inserting: false, editing: false },
+            {
+                name: "machinequantity", title: "<span style='color: red;'>*</span>設備數量", type: "text", width: 70, align: "center", validate: [{
+                    validator: function (value, item) {
+                        var num = parseFloat(value);
+                        return num > 0 && /^-?\d+$/.test(value)
+                    },
+                    message: "機台數量，請輸入大於0的整數"
+                }]
+            },
+            { name: "manufacturers", title: "廠牌", type: "text", width: 70, align: "center" },
+            {
+                name: "management", title: "<span style='color: red;'>*</span>管理單位", type: "text", width: 70, align: "center", validate: [{
+                    validator: function (value, item) {
+                        return value !== null && value !== ""; // 檢查是否為非空值
+                    },
+                    message: "管理單位為必填項目"
+                }]
+            },
+            {
+                name: "principal", title: "<span style='color: red;'>*</span>負責人員", type: "text", width: 70, align: "center", validate: [{
+                    validator: function (value, item) {
+                        return value !== null && value !== ""; // 檢查是否為非空值
+                    },
+                    message: "負責人員為必填項目"
+                }]
+            },
+            { name: "remark", title: "備註", type: "text", width: 50, align: "center" },
+            {
+                name: "refrigerantweight", title: "<span style='color: red;'>*</span>冷媒容量", type: "text", width: 90, align: "center", validate: [{
+                    validator: function (value, item) {
+                        var num = parseFloat(value);
+                        return num > 0 && /^-?\d+(\.\d{1,6})?$/.test(value);
+                    },
+                    message: "請輸入大於0的數字，最多6位小數"
+                }]
+            },
+            {
+                name: "unit", title: "單位", type: "text", width: 60, align: "center", inserting: false, editing: false, insertTemplate: function () {
+                    return $("<span>").text("公斤(kg)	");
+                },
+            },
+            {
+                name: "distributeratio", title: "<span style='color: red;'>*</span>分配比率(%)", type: "text", width: 60, align: "center", validate: [{
+                    validator: function (value, item) {
+                        var num = parseFloat(value);
+                        return num > 0 && num <= 100 && /^-?\d+(\.\d{1,2})?$/.test(value);//判斷是否介於0-100的數，小數點限制2位
+                    },
+                    message: "分配比率(%)，請輸入介於0-100之間的數，最多2位小數"
+                }]
+            },
+                { type: "control", editButton: true, modeSwitchButton: true },
+            {
+                name: "evidencefile",
+                title: "佐證資料",
+                itemTemplate: function (value, item) {
+                    return $(`<img src=\"/Img/edit.png\" class='CallFileManage-btn' data-id='${item.id}'  data-basicid='${basicid}'  data-equipmentname='${item.equipmentname}'>`);//(該筆資料的id，基本資料ID，冷媒逸散&填充名稱)
+                },
+                width: 90,
+                align: "center"
+            }
+        ]
+                        });
+        $(document).on("click", ".CallFileManage-btn", function () {
+            var id = $(this).data('id');
+            var basicid = $(this).data('basicid');
+            var equipmentname = $(this).data('equipmentname');
+            var url = '/OrganizeFile/EvidenceFileDetail?BasicId=' + basicid + '&ItemId=' + id + '&WhereForm=冷媒逸散/無進行冷媒填充';//id為該筆item的id
+            subinitB('1000px', '100%', url, '佐證資料-' + equipmentname);
+        });
+
+        //匯入excel
+        function ImportExcel() {
+            location.href = '../../OrganizeExcel/RefrigerantNoneImportExcel?BasicId=' + basicid;
+        }
+
+        //匯出excel
+        function ExportExcel() {
+            var factoryNames = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.Factory)));
+            var EquipmentType = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.EquipmentType)));
+            var Unit = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.Unit)));
+            var Refrigerant = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.Refrigerant)));
+
+            // 在這裡調用 ExportExcel_RefrigerantNone 函數並傳遞相應的參數
+            ExportExcel_RefrigerantNone(factoryNames, EquipmentType, Unit, Refrigerant);
+        }
+
+        //CSV
+        function ImportCSV() {
+            location.href = '../../OrganizeCSV/RefrigerantNoneImport?BasicId=' + basicid;
+        }
+        function ExportCSV() {
+            ExportCSV_RefrigerantNone();
+        }
+
+        //Json
+        function ImportJSON() {
+            location.href = '../../OrganizeJSON/RefrigerantNoneImport?BasicId=' + basicid;
+        }
+        function ExportJSON() {
+            ExportJSON_RefrigerantNone();
+        }
+        $(".exportExcel").on("click", function () {
+            ExportExcel();
+        });
+        $(".exportCSV").on("click", function () {
+            ExportCSV();
+        });
+        $(".exportJSON").on("click", function () {
+            ExportJSON();
+        });
+
+        $(".importExcel").on("click", function () {
+            ImportExcel();
+        });
+        $(".importCSV").on("click", function () {
+            ImportCSV();
+        });
+        $(".importJSON").on("click", function () {
+            ImportJSON();
+        });
+    </script>
+
+}
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-lg-2">
+            <!-- 加入部分視圖，顯示左標題列 -->
+            @await Html.PartialAsync("Organize/Organize")
+        </div>
+        <div class="col-lg-10">
+            <div class="card">
+                <h3>
+                    冷媒設備
+                    <label class="tooltips" onmouseover="showTooltip(event)" onmouseout="hideTooltip()">
+                        @*懸浮文字文字*@
+                        <img src="~/Img/QuestionMark.png" class="QuestionMark" />
+
+                        <span class="tooltips-text" style="width:600px">
+                            「家用冷凍、冷藏裝備」例如：家用冰箱、開飲機、… <br />
+                            「獨立商用冷凍、冷藏裝備」例如：商用冷櫃、公共飲水機、冰淇淋機、飲料販賣機、啤酒機、酒櫃、…<br />
+                            「中、大型冷凍、冷藏裝備」例如：冷庫、冷鏈倉儲、…<br />
+                            「交通用冷凍、冷藏裝備」例如：冷凍運輸、冷藏運輸、…<br />
+                            「工業冷凍、冷藏裝備，包括食品加工及冷藏」例如：工業製冰機、急速冷凍機、冷凍乾燥機、…<br />
+                            「冰水機」例如：水冷式冰水主機、風冷式冰水主機、…<br />
+                            「住宅及商業建築冷氣機」例如：分離式冷氣、窗型冷氣、熱泵、…<br />
+                            「移動式空氣清靜機」例如：車用冷氣、…
+                        </span>
+                    </label>
+                    <a href="../../systemfile/無進行冷媒填充範本.pdf" target="_blank">
+                        <button class="genbtn">範本</button>
+                    </a>
+                </h3>
+
+                    <div style="margin: 10px 0;">
+                        <button class="genbtn exportExcel" value="">下載Excel範例</button>
+                        <button class="genbtn importExcel" value="">匯入Excel</button>
+                        <button class="genbtn exportCSV" value="">下載CSV範例</button>
+                        <button class="genbtn importCSV" value="">匯入CSV</button>
+                        <button class="genbtn exportJSON" value="">下載JSON範例</button>
+                        <button class="genbtn importJSON" value="">匯入JSON</button>
+                    </div>
+                
+                <div style="margin-bottom:10px">
+                    <div class="title-box col-4">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "RefrigerantNone" ? "active" : "")" href="/Organize/RefrigerantNone/@ViewBag.Basicid">無進行冷媒填充</a>
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "RefrigerantHave" ? "active" : "")" href="/Organize/RefrigerantHave/@ViewBag.Basicid">有進行冷媒填充</a>
+                    </div>
+                </div>
+                <form asp-action="RefrigerantNone" method="get" id="RefrigerantNone">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    @*             <input name="search" type="text" placeholder="關鍵字搜尋" />
+                    <input type="submit" value="查詢" class="btn btn-primary genbtn" /> *@
+                    <div class="scrollable-container jsgrid" style="height:500px;margin-top:10px">
+                        <div id="table1"></div>
+                    </div>
+                    <br />
+
+                </form>
+                <form asp-action="RefrigerantNone" id="RefrigerantNone">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group textcenter">
+                        <input type="submit" value="下一頁" class="btn btn-primary genbtn" />
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,146 @@
+﻿@using Newtonsoft.Json;
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+
+}
+
+@{
+    ViewData["Title"] = "Coefficient";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+
+@section Scripts {
+
+    <script nonce="@nonce">
+
+        var EmissionSource = @Html.Raw(ViewBag.EmissionSource);
+        var EmissionSourceItems = EmissionSource.map(function (item) {
+            return { name: item.Name, value: item.Code };
+        });
+
+        var Unit = @Html.Raw(ViewBag.Unit);
+        var unitItems = Unit.map(function (item) {
+            return { name: item.Name, value: item.Code };
+        });
+
+        var Category = @Html.Raw(ViewBag.Category);
+        var CategoryItems = Category.map(function (item) {
+            return { name: item.Name, value: item.Code };
+        });
+        $("#table1").jsGrid({
+            inserting: true,
+            editing: true,
+            sorting: true,
+            paging: false,
+            rownumbers: true,
+            pageLoading: false,
+            autoload: false,
+            width: "100%",
+            height: "100%",
+            data: @Html.Raw(ViewBag.DeatilsJson),//如果data有值，一載入時顯示
+            controller: {
+                //載入
+                loadData: function (filter) {
+                    return $.ajax({
+                        type: "GET",
+                        url: "/CoefficientTools/ResourceUse?type=LoadData",
+                        dataType: "json",
+                        data: filter
+                    }).done(function (response) {
+                        if (response.success === false) {
+                            alert(response.error);
+                            window.location.href = "/Member/Login"; // 導向錯誤頁面
+                        }
+                    });
+                },
+                //新增
+                insertItem: function (item) {
+                    return $.ajax({
+                        type: "POST",
+                        url: "/CoefficientTools/ResourceUse?type=add",
+                        data: item
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+                    });
+                },
+                //修改
+                updateItem: function (item) {
+                    return $.ajax({
+                        type: "POST",
+                        url: "/CoefficientTools/ResourceUse?type=Edit",
+                        data: item,
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+
+                    });
+
+                },
+                //刪除
+                deleteItem: function (item) {
+                    return $.ajax({
+                        type: "GET",
+                        url: "/CoefficientTools/ResourceUse?type=delete",
+                        data: item
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+                    });
+                },
+            },
+            fields: [
+                { name: "sort", title: "編號", type: "rownumbers", width: 40, align: "center" },
+                { name: "emissionsource", title: "排放源別", type: "select", width: 100, align: "center", items: EmissionSourceItems, valueField: "value", textField: "name" },
+                { name: "name", title: "資源名稱", type: "text", width: 100, align: "center" },
+                { name: "unit", title: "單位", type: "select", width: 100, align: "center", items: unitItems, valueField: "value", textField: "name" },
+                { name: "category", title: "範疇別", type: "select", width: 100, align: "center", items: CategoryItems, valueField: "value", textField: "name" },
+                {
+                    name: "co2coefficient", title: "CO<sub>2</sub>排放係數", type: "text", width: 100, align: "center", validate: [{
+                        validator: function (value, item) {
+                            if (value === null || value === "") {
+                                return true; // 允許空值
+                            }
+                            var num = parseFloat(value);
+                            return num >= 0 && /^-?\d+(\.\d{1,6})?$/.test(value);//判斷是否為大於0的數，小數點限制4位
+                        },
+                        message: "請輸入大於0的數字，最多6位小數"
+                    }]
+                },
+                { name: "co2unit", title: "CO<sub>2</sub>單位", type: "text", width: 100, align: "center", inserting: false, editing: false },             
+                { type: "control", editButton: true, modeSwitchButton: true, deleteButton: false },
+            ]
+        });
+
+    </script>
+}
+<style nonce="@nonce">
+    .height_style {
+        height: 500px;
+    }
+</style>
+
+<div class="container">
+    <h3>
+        係數設定
+    </h3>
+    <div class="title-box">
+        @await Html.PartialAsync("Title/Coefficient")
+
+    </div>
+
+    <form asp-action="ResourceUse" method="get" id="ResourceUse">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="scrollable-container jsgrid height_style" style="height:500px">
+            <div id="table1"></div>
+        </div>
+        <br />
+
+    </form>
+    <form asp-action="ResourceUse" id="ResourceUse">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+
+    </form>
+
+</div>

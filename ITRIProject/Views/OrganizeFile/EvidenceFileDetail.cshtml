@@ -1,0 +1,144 @@
+﻿@model ITRIProject.Models.View.ViewEvidenceFileManage
+@{
+    Layout = null;
+    Layout = "~/Views/Shared/Organize/_Organizedetail.cshtml";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+
+@section Scripts{
+    <script nonce="@nonce">
+
+        $(document).ready(function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const closeButtonParam = urlParams.get('closeButton');
+
+            // 根据参数值隐藏 closeButton
+            if (closeButtonParam === '1') {
+                var closeButton = document.getElementById('closeButton');
+                if (closeButton) {
+                    closeButton.style.display = 'none';
+                }
+            }
+            //上傳完需id重新導回此頁面
+            var basicId = document.getElementsByName("BasicId")[0].value;
+            var itemId = document.getElementsByName("ItemId")[0].value;
+            var WhereForm = document.getElementsByName("WhereForm")[0].value;
+            //點擊上傳時，檢查是否有檔案
+            $("#EvidenceFileDetail").validate({
+                rules: {
+                    EvidenceFile: "required",
+
+                },
+                messages: {
+                    EvidenceFile: "請上傳檔案",
+                },
+                errorElement: 'div',
+                errorPlacement: function (error, element) {
+                    var placement = $(element).data('error');
+                    if (placement) {
+                        $(placement).append(error)
+                    } else {
+                        error.insertAfter(element);
+                    }
+                }
+            });
+            $("#EvidenceFileDetail").submit(function (event) {
+                //點擊上傳時，檢查是否有檔案
+                var isValid = $("#EvidenceFileDetail").validate().form();
+                if (!isValid) {
+                    return false;
+                }
+
+                event.preventDefault(); // 防止表單的預設提交行為
+                var formData = new FormData($(this)[0]); // 將整個表單數據轉換為 FormData
+
+                $.ajax({
+                    url: "/OrganizeFile/EvidenceFileDetail/",
+                    type: "POST",
+                    data: formData, // 將表單數據和驗證碼傳遞到後端
+                    processData: false,
+                    contentType: false,
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.nologin) {
+                            window.location.href = "/Member/Login";
+                        }
+                        else if (response.success) {
+                            // 登入成功，執行相應的操作
+                            var id = response.id; // 獲取回傳的 id 值
+                            console.log(id);
+                            window.location.href = '/OrganizeFile/EvidenceFileDetail?BasicId=' + basicId + '&ItemId=' + itemId + '&WhereForm=' + WhereForm;
+                        } else {
+                            // 登入失敗，處理錯誤回應
+                            alert(response.error);
+                        }
+                    },
+
+                });
+
+
+            });
+        });
+        $(".close-popup").on("click", function () {
+            parent.$.magnificPopup.close();
+        });
+    </script>
+}
+<style nonce="@nonce">
+    .center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 50px;
+    }
+
+    .upload-button {
+        margin-top: 40px;
+    }
+
+    td {
+        text-align: left;
+    }
+    table{
+        width: 100%;
+    }
+</style>
+<div class="table-container">
+<table style="width:100%" class="table">
+    <thead>
+    <tr>
+        <td>名稱</td>
+        <td>上傳日期</td>
+        <td>操作</td>
+
+    </tr></thead>
+    <tbody>
+    @foreach (var item in Model.EvidenceFileManage)
+    {
+        <tr>
+            <td> <a href="~/@ITRIProject.Controllers.CommonController.HtmlFileSave.HtmlPath/@ViewBag.Path/@item.WhereForm/@item.FileName" download>@item.FileName</a></td>@*下載路徑*@
+            <td>@item.Time</td>
+            <td><a asp-action="Delete" asp-route-BasicId="@item.BasicId" asp-route-ItemId="@item.ItemId" asp-route-WhereForm="@item.WhereForm" asp-route-FileName="@item.FileName">刪除</a></td> 
+        </tr>
+    }
+</tbody>
+</table>
+</div>
+
+
+<form asp-action="EvidenceFileDetail" id="EvidenceFileDetail">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="center card form-group textcenter upload-button">
+        <input type="text" value="@ViewBag.BasicId" name="BasicId" style="display:none" />
+        <input type="text" value="@ViewBag.ItemId" name="ItemId" style="display:none" />
+        <input type="text" value="@ViewBag.WhereForm" name="WhereForm" style="display:none" />
+        <label>
+                <input multiple type="file" name="EvidenceFile" id="EvidenceFile" />
+                <input type="submit" value="上傳" class="genbtn" />         
+        </label>
+    </div>
+
+    <div class="form-group textcenter">
+        <a id="closeButton" class="genbtn close-popup">關閉</a>
+    </div>
+</form>

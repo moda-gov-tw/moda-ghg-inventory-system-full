@@ -1,0 +1,425 @@
+@charset "utf-8";
+/* 基本樣式:版型使用尺寸、規格V1601 */
+
+/*  ===== 網站元件樣式 ===== */
+/* 指引步驟 */
+.processtable table{border-collapse:collapse;}
+.processtable td{border-collapse:collapse; border:0; padding:2px;}
+.processtable .prononework{padding:6px 4px;-webkit-border-radius:20px;-moz-border-radius:20px;border-radius:20px;}
+.processtable .procurrent{padding:6px 4px;-webkit-border-radius:20px;-moz-border-radius:20px;border-radius:20px;}
+.processtable .profinish{padding:6px 4px;-webkit-border-radius:20px;-moz-border-radius:20px;border-radius:20px;}
+.processtable .proaricon{width:20px; height:25px;}
+.processtable .proiconfinish{font-size:1.6em;}
+.processtable .proiconcurrent{font-size:1.6em;}
+.processtable .proiconnone{font-size:1.6em;}
+/* 指引步驟樣式二 */
+.OchiStep {padding: 0px;background: transparent;list-style: none;overflow: hidden;margin-top: 20px;margin-bottom: 20px;border-radius: 4px;}
+.OchiStep>li {display: table-cell;vertical-align: top;width: 1%;}
+.OchiStep>li+li:before {padding: 0;}
+.OchiStep li a {text-decoration: none;padding: 10px 0 10px 45px;position: relative;display: inline-block;width: calc( 100% - 10px ); cursor:default;}
+.OchiStep li:first-child a {padding-left: 15px;}
+.OchiStep li:last-of-type a {width: calc( 100% - 38px );}
+.OchiStep li a:before {
+content: " ";display: block;width: 0;height: 0;border-top: 50px solid transparent;border-bottom: 50px solid transparent;position: absolute;top: 50%;margin-top: -50px;margin-left: 2px;left: 100%;z-index: 1;}
+.OchiStep li a:after {content: " ";display: block;width: 0;height: 0;border-top: 50px solid transparent;border-bottom: 50px solid transparent;position: absolute;top: 50%;margin-top: -50px;left: 100%;z-index: 2;}
+
+/* 頁籤式按鈕 */
+.tabmenublock{padding:0; padding-bottom:2px;}
+.SlimTabBtnCurrent{margin:0; padding:5px 15px; border-top-left-radius:10px; border-top-right-radius:10px;}
+.SlimTabBtn{margin:0; padding:0;}
+.SlimTabBtn a{margin:0; text-decoration:none; padding:5px 15px 4px 15px;border-top-left-radius:10px; border-top-right-radius:10px;}
+
+/* 按鈕樣式 */
+a.genbtn{
+	display:inline-block;white-space: nowrap;
+}
+a.genbtnS{
+	display:inline-block;white-space: nowrap;
+}
+
+/* ie修正 */
+.ie8 .tabmenublock{padding-bottom:1px;}
+.ie9 .tabmenublock{padding-bottom:2px;}
+.ie10 .tabmenublock{padding-bottom:2px;}
+.ie11 .tabmenublock{padding-bottom:2px;}
+.ie8 .SlimTabBtn a{padding:5px 15px 3px 15px;}
+.ie9 .SlimTabBtn a{padding:5px 15px 3px 15px;}
+.ie10 .SlimTabBtn a{padding:5px 15px 3px 15px;}
+.ie11 .SlimTabBtn a{padding:5px 15px 3px 15px;}
+
+/* label checkbox radio inline style */
+label.inlineitem,div.inlineitem{display:inline-block; margin-right:5px;}
+
+/* 輸入框 */
+.inputex{padding:2px; border-radius:3px;}
+
+/* 表單樣式 */
+.gentable table{border-collapse:collapse;}
+.gentable th{ padding:5px;}
+.gentable td{padding:5px; border-collapse:collapse; }
+.gentable td.titlebg{background:#f1f6f9;}
+/* 表單樣式內無樣式表格 */
+.gentable table.tablenonestyle tr th{padding:0px; border:0;}
+.gentable table.tablenonestyle tr td{padding:0px; border:0;}
+
+/* 雙色表格 */
+.stripeMe table{border-collapse:collapse;}
+.stripeMe table tr td{padding:8px 5px; border-collapse:collapse;}
+.stripeMe th{padding:10px 5px; border-collapse:collapse;}
+/* 雙色表格內無樣式表格 */
+.stripeMe table.tablenonestyle{border:0px;}
+.stripeMe table.tablenonestyle tr td{padding:0px; border:0; background-color:transparent;}
+/* 雙色表格CSS雙色 */
+.stripeMeCS table{border-collapse:collapse;}
+.stripeMeCS table tr td{padding:8px 5px; border-collapse:collapse;}
+.stripeMeCS th{padding:10px 5px; border-collapse:collapse;}
+/* 雙色表格CSS雙色內無樣式表格 */
+.stripeMeCS table.tablenonestyle{border:0px;}
+.stripeMeCS table.tablenonestyle tr td{padding:0px; border:0; background-color:transparent;}
+/* input group */
+.Ochi-inputgroup{white-space:nowrap;display:table; width:100%;}
+.Ochi-inputgroup .itemcell{display:table-cell; vertical-align:top;}
+.Ochi-inputgroup .itemcell .adomicon{padding:2px 6px;height:24px;border-radius:6px;}/* 若要修改欄高，調整height */
+.Ochi-inputgroup .itemcell input.typein{padding:2px;height:24px;border-radius:6px;}
+.Ochi-inputgroup .itemcell a.btnlink,.Ochi-inputgroup .itemcell input.btnlink,.Ochi-inputgroup .itemcell button.btnlink{
+border-radius:6px; transition: all ease-in-out 0.2s;
+}
+.Ochi-inputgroup .itemcell a.btnlink{padding:2px 6px 3px 6px;}
+/* firefox專屬調整 */
+@-moz-document url-prefix() { 
+  .Ochi-inputgroup .itemcell a.btnlink{padding:1px 6px;}
+}
+.Ochi-inputgroup .itemcell.apadding{padding-top:2px;}
+.Ochi-inputgroup .itemcell a.btnlink:hover,.Ochi-inputgroup .itemcell input.btnlink:hover,.Ochi-inputgroup .itemcell button.btnlink:hover{
+cursor:pointer; 
+}
+.Ochi-inputgroup .itemcell a.btnlink:hover{text-decoration:none;}
+
+.Ochi-inputgroup .itemcell:not(:last-child) .adomicon,.Ochi-inputgroup .itemcell:not(:last-child) input.typein,.Ochi-inputgroup .itemcell:not(:last-child) a.btnlink,.Ochi-inputgroup .itemcell:not(:last-child) input.btnlink,.Ochi-inputgroup .itemcell:not(:last-child) button.btnlink{border-bottom-right-radius:0;border-top-right-radius:0; border-right:0;}
+.Ochi-inputgroup .itemcell:not(:first-child) .adomicon,.Ochi-inputgroup .itemcell:not(:first-child) input.typein,.Ochi-inputgroup .itemcell:not(:first-child) a.btnlink,.Ochi-inputgroup .itemcell:not(:first-child) input.btnlink,.Ochi-inputgroup .itemcell:not(:first-child) button.btnlink{border-bottom-left-radius:0;border-top-left-radius:0;}
+
+/* 使用font-awesome美化checkbox、radio */
+input[type=radio].with-font,
+input[type=checkbox].with-font {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+    
+input[type=radio].with-font ~ label:before,
+input[type=checkbox].with-font ~ label:before {
+    font-family: FontAwesome;
+    display: inline-block;
+    content: "\f1db";
+    letter-spacing: 10px;
+    font-size: 1em;
+    width: 1.2em;
+}
+
+input[type=radio].with-font:checked ~ label:before,
+input[type=checkbox].with-font:checked ~ label:before  {
+    content: "\f192";
+    font-size: 1em;
+    letter-spacing: 5px;
+}
+input[type=checkbox].with-font ~ label:before {        
+    content: "\f096";
+}
+input[type=checkbox].with-font:checked ~ label:before {
+    content: "\f046";        
+}
+/*  ===== 基本CSS ===== */
+/* 版面控制項 */
+.halfliqid{width:auto; max-width:1240px; min-width:970px; margin:0 auto;}
+.fixwidth{width:980px;margin:0 auto;}
+.fullliquid{width:100%; min-width:970px; padding:0 5px;}
+/* 基本兩欄排版 */
+.twocol:after{display:block; clear:both; content:"."; visibility:hidden; height:0;}
+.twocol .right{float:right;}
+.twocol .left{float:left;}
+/* 文字對齊 */
+.textcenter{text-align:center;}
+.textleft{text-align:left;}
+.textright{text-align:right;}
+/* 圖片 */
+.imgcenter{margin:0 auto;}
+/* 間距微調與美編 */
+.margin5TB{margin-top:5px; margin-bottom:5px;}
+.margin10TB{margin-top:10px; margin-bottom:10px;}
+.margin15TB{margin-top:15px; margin-bottom:15px;}
+.margin20TB{margin-top:20px; margin-bottom:20px;}
+.margin25TB{margin-top:25px; margin-bottom:25px;}
+.margin30TB{margin-top:30px; margin-bottom:30px;}
+.margin5B{margin-bottom:5px;}
+.margin5T{margin-top:5px;}
+.margin10B{margin-bottom:10px;}
+.margin10T{margin-top:10px;}
+.margin15B{margin-bottom:15px;}
+.margin15T{margin-top:15px;}
+.margin20B{margin-bottom:20px;}
+.margin20T{margin-top:20px;}
+.margin25B{margin-bottom:25px;}
+.margin25T{margin-top:25px;}
+.margin30B{margin-bottom:30px;}
+.margin30T{margin-top:30px;}
+.margin35B{margin-bottom:35px;}
+.margin35T{margin-top:35px;}
+.margin40T{margin-top:40px;}
+.margin40B{margin-bottom:40px;}
+.margin45T{margin-top:45px;}
+.margin45B{margin-bottom:45px;}
+.margin50T{margin-top:50px;}
+.margin50B{margin-bottom:50px;}
+.padding5TB{padding-top:5px; padding-bottom:5px;}
+.padding5RL{padding-left:5px; padding-right:5px;}
+.padding10TB{padding-top:10px; padding-bottom:10px;}
+.padding10RL{padding-left:10px; padding-right:10px;}
+.padding20RL{padding-left:20px; padding-right:20px;}
+.padding5ALL{padding:5px;}
+.padding10ALL{padding:10px;}
+/* 常用尺寸 */
+.width1{width:1%;}
+.width2{width:2%;}
+.width3{width:3%;}
+.width4{width:4%;}
+.width5{width:5%;}
+.width6{width:6%;}
+.width7{width:7%;}
+.width8{width:8%;}
+.width9{width:9%;}
+.width10{width:10%;}
+.width11{width:11%;}
+.width12{width:12%;}
+.width13{width:13%;}
+.width14{width:14%;}
+.width15{width:15%;}
+.width16{width:16%;}
+.width17{width:17%;}
+.width18{width:18%;}
+.width19{width:19%;}
+.width20{width:20%;}
+.width21{width:21%;}
+.width22{width:22%;}
+.width23{width:23%;}
+.width24{width:24%;}
+.width25{width:25%;}
+.width26{width:26%;}
+.width27{width:27%;}
+.width28{width:28%;}
+.width29{width:29%;}
+.width30{width:30%;}
+.width31{width:31%;}
+.width32{width:32%;}
+.width33{width:33%;}
+.width34{width:34%;}
+.width35{width:35%;}
+.width36{width:36%;}
+.width37{width:37%;}
+.width38{width:38%;}
+.width39{width:39%;}
+.width40{width:40%;}
+.width41{width:41%;}
+.width42{width:42%;}
+.width43{width:43%;}
+.width44{width:44%;}
+.width45{width:45%;}
+.width46{width:46%;}
+.width47{width:47%;}
+.width48{width:48%;}
+.width49{width:49%;}
+.width50{width:50%;}
+.width51{width:51%;}
+.width52{width:52%;}
+.width53{width:53%;}
+.width54{width:54%;}
+.width55{width:55%;}
+.width56{width:56%;}
+.width57{width:57%;}
+.width58{width:58%;}
+.width59{width:59%;}
+.width60{width:60%;}
+.width61{width:61%;}
+.width62{width:62%;}
+.width63{width:63%;}
+.width64{width:64%;}
+.width65{width:65%;}
+.width66{width:66%;}
+.width67{width:67%;}
+.width68{width:68%;}
+.width69{width:69%;}
+.width70{width:70%;}
+.width71{width:71%;}
+.width72{width:72%;}
+.width73{width:73%;}
+.width74{width:74%;}
+.width75{width:75%;}
+.width76{width:76%;}
+.width77{width:77%;}
+.width78{width:78%;}
+.width79{width:79%;}
+.width80{width:80%;}
+.width81{width:81%;}
+.width82{width:82%;}
+.width83{width:83%;}
+.width84{width:84%;}
+.width85{width:85%;}
+.width86{width:86%;}
+.width87{width:87%;}
+.width88{width:88%;}
+.width89{width:89%;}
+.width90{width:90%;}
+.width91{width:91%;}
+.width92{width:92%;}
+.width93{width:93%;}
+.width94{width:94%;}
+.width95{width:95%;}
+.width96{width:96%;}
+.width97{width:97%;}
+.width98{width:98%;}
+.width99{width:99%;}
+.width100{width:100%;}
+/* css grid 等分列表用 */
+.ochirow{display:flex; flex-direction:row;flex-wrap:wrap;}
+/* 小於576px的螢幕:手機直 */
+@media (max-width: 575px) {
+	.ochicol-xs-12{width:8.3%;}
+	.ochicol-xs-11{width:9%;}
+	.ochicol-xs-10{width:10%;}
+	.ochicol-xs-9{width:11.1%;}
+	.ochicol-xs-8{width:12.5%;}
+	.ochicol-xs-7{width:14.2%;}
+	.ochicol-xs-6{width:16.6%;}
+	.ochicol-xs-5{width:20%;}
+	.ochicol-xs-4{width:25%;}
+	.ochicol-xs-3{width:33.3%;}
+	.ochicol-xs-2{width:50%;}
+	.ochicol-xs-1{width:100%;}
+}
+/* 介於576~768px的螢幕:手機橫、平板直 */
+@media (min-width: 576px) {
+	.ochicol-sm-12{width:8.3%;}
+	.ochicol-sm-11{width:9%;}
+	.ochicol-sm-10{width:10%;}
+	.ochicol-sm-9{width:11.1%;}
+	.ochicol-sm-8{width:12.5%;}
+	.ochicol-sm-7{width:14.2%;}
+	.ochicol-sm-6{width:16.6%;}
+	.ochicol-sm-5{width:20%;}
+	.ochicol-sm-4{width:25%;}
+	.ochicol-sm-3{width:33.3%;}
+	.ochicol-sm-2{width:50%;}
+	.ochicol-sm-1{width:100%;}
+	
+}
+/* 介於768~992px的螢幕:平板橫 */
+@media (min-width: 768px) {
+	.ochicol-md-12{width:8.3%;}
+	.ochicol-md-11{width:9%;}
+	.ochicol-md-10{width:10%;}
+	.ochicol-md-9{width:11.1%;}
+	.ochicol-md-8{width:12.5%;}
+	.ochicol-md-7{width:14.2%;}
+	.ochicol-md-6{width:16.6%;}
+	.ochicol-md-5{width:20%;}
+	.ochicol-md-4{width:25%;}
+	.ochicol-md-3{width:33.3%;}
+	.ochicol-md-2{width:50%;}
+	.ochicol-md-1{width:100%;}
+	
+}
+/* 介於1199~992px的螢幕:中、小筆電 */
+@media (min-width: 992px) { 
+	.ochicol-lg-12{width:8.3%;}
+	.ochicol-lg-11{width:9%;}
+	.ochicol-lg-10{width:10%;}
+	.ochicol-lg-9{width:11.1%;}
+	.ochicol-lg-8{width:12.5%;}
+	.ochicol-lg-7{width:14.2%;}
+	.ochicol-lg-6{width:16.6%;}
+	.ochicol-lg-5{width:20%;}
+	.ochicol-lg-4{width:25%;}
+	.ochicol-lg-3{width:33.3%;}
+	.ochicol-lg-2{width:50%;}
+	.ochicol-lg-1{width:100%;}
+	
+}
+/* 大於1200px的螢幕 */
+@media (min-width: 1200px) {
+    .ochicol-xl-12{width:8.3%;}
+	.ochicol-xl-11{width:9%;}
+	.ochicol-xl-10{width:10%;}
+	.ochicol-xl-9{width:11.1%;}
+	.ochicol-xl-8{width:12.5%;}
+	.ochicol-xl-7{width:14.2%;}
+	.ochicol-xl-6{width:16.6%;}
+	.ochicol-xl-5{width:20%;}
+	.ochicol-xl-4{width:25%;}
+	.ochicol-xl-3{width:33.3%;}
+	.ochicol-xl-2{width:50%;}
+	.ochicol-xl-1{width:100%;}
+}
+/* 最小字數 */
+.minsize01{min-width:1em;}
+.minsize02{min-width:2em;}
+.minsize03{min-width:3em;}
+.minsize04{min-width:4em;}
+.minsize05{min-width:5em;}
+.minsize06{min-width:6em;}
+.minsize07{min-width:7em;}
+.minsize08{min-width:8em;}
+.minsize09{min-width:9em;}
+.minsize10{min-width:10em;}
+.minsize11{min-width:11em;}
+.minsize12{min-width:12em;}
+.minsize13{min-width:13em;}
+.minsize14{min-width:14em;}
+.minsize15{min-width:15em;}
+.minsize16{min-width:16em;}
+.minsize17{min-width:17em;}
+.minsize18{min-width:18em;}
+.minsize19{min-width:19em;}
+.minsize20{min-width:20em;}
+.minsize21{min-width:21em;}
+.minsize22{min-width:22em;}
+.minsize23{min-width:23em;}
+.minsize24{min-width:24em;}
+.minsize25{min-width:25em;}
+.minsize26{min-width:26em;}
+.minsize27{min-width:27em;}
+.minsize28{min-width:28em;}
+.minsize29{min-width:29em;}
+.minsize30{min-width:30em;}
+/* line-hight-old */
+.lineheight01{line-height:1.2em;}
+.lineheight02{line-height:1.5em;}
+.lineheight03{line-height:1.8em;}
+.lineheight04{line-height:2em;}
+/* line-hight-new */
+.lineheight10em{line-height:1.0em;}
+.lineheight12em{line-height:1.2em;}
+.lineheight14em{line-height:1.4em;}
+.lineheight16em{line-height:1.6em;}
+.lineheight18em{line-height:1.8em;}
+.lineheight20em{line-height:2.0em;}
+.lineheight22em{line-height:2.2em;}
+.lineheight24em{line-height:2.4em;}
+/* font */
+.font-size1{font-size:0.769em;}
+.font-size2{font-size:0.923em;}
+.font-size3{font-size:1.154em;}
+.font-size4{font-size:1.385em;}
+.font-size5{font-size:1.615em;}
+.font-size6{font-size:1.843em;}
+.font-size7{font-size:2em;}
+.font-size8{font-size:2.2em;}
+.font-size9{font-size:2.5em;}
+.font-bold{font-weight:bold;}
+.font-debold{font-weight:normal;}
+
+/* 附加樣式 */
+.inlineObj{display: inline;}

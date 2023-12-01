@@ -1,0 +1,216 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    decimal Total = 0, Totalitem1 = 0, item1_1 = 0, item1_2 = 0, item1_3 = 0, item1_4 = 0, item2_1 = 0, item3_1 = 0, item4_1 = 0, item4_3 = 0, Totalitem4 = 0;
+    decimal PTotal=0,PTotalitem1 = 0, Pitem1_1 = 0, Pitem1_2 = 0, Pitem1_3 = 0, Pitem1_4 = 0, Pitem2_1 = 0, Pitem3_1 = 0, Pitem4_1 = 0, Pitem4_3 = 0, PTotalitem4 = 0;
+}
+@section Scripts {
+    <script>
+        $(".exportTables-btn").on("click", function () {
+            var filename = $(this).data('filename');
+            exportTables(filename);
+        });
+    </script>
+}
+<div class="row">
+    <div class="col-lg-2">
+        <!-- 加入部分視圖，顯示左標題列 -->
+        @await Html.PartialAsync("Organize/Organize")
+    </div>
+    <div class="col-lg-10">
+        <h3>
+            組織型溫盤報告書        
+
+        </h3>
+        <button data-filename="組織型溫盤報告書" class="exportTables-btn">匯出結果</button>
+        <form asp-action="OrganizeReport" id="OrganizeReport">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @{
+                @foreach (var item in ViewBag.result)
+                {
+                    if (item.EmissionSource == "107")
+                    {
+                        item1_1 = Math.Round(item.dataValue, 6); // 只有在條件成立時賦值給 item1_1
+                    }
+                    else if (item.EmissionSource == "109")
+                    {
+                        item1_2 = Math.Round(item.dataValue, 6);
+                    }
+                    else if (item.EmissionSource == "108")
+                    {
+                        item1_3 = Math.Round(item.dataValue, 6);
+                    }
+                    else if (item.EmissionSource == "110")
+                    {
+                        item1_4 = Math.Round(item.dataValue, 6);
+                    }
+                    else if (item.EmissionSource == "111")
+                    {
+                        item2_1 = Math.Round(item.dataValue, 6);
+                    }
+                }
+                foreach (var ResourceUse in ViewBag.ResourceuseResult)
+                {
+                    item4_1 = Math.Round(ResourceUse.dataValue, 6);
+                }
+                item1_4 += Math.Round(ViewBag.WorkinghourResult,6);
+                foreach (var Transportation in ViewBag.TransportationResult)
+                {
+                    item3_1 = Math.Round(Transportation.dataValue, 6);
+                }
+                foreach (var Dumptreatment in ViewBag.DumptreatmentResult)
+                {
+                    item4_3 = Math.Round(Dumptreatment.dataValue, 6);
+                }
+                Totalitem1 += item1_1 + item1_2 + item1_3 + item1_4;
+                Totalitem4 += item4_1+item4_3;
+                Total += item1_1 + item1_2 + item1_3 + item1_4 + item2_1 + item3_1 + item4_1 + item4_3;
+                if (Total != 0)
+                {
+                    Pitem1_1 = Math.Round(item1_1 / Total * 100, 2);
+                    Pitem1_2 = Math.Round(item1_2 / Total * 100, 2);
+                    Pitem1_3 = Math.Round(item1_3 / Total * 100, 2);
+                    Pitem1_4 = Math.Round(item1_4 / Total * 100, 2);
+                    Pitem2_1 = Math.Round(item2_1 / Total * 100, 2);
+                    Pitem3_1 = Math.Round(item3_1 / Total * 100, 2);
+                    Pitem4_1 = Math.Round(item4_1 / Total * 100, 2);
+                    Pitem4_3 = Math.Round(item4_3 / Total * 100, 2);
+                }
+                PTotal = Pitem1_1 + Pitem1_2 + Pitem1_3 + Pitem1_4 + Pitem2_1 + Pitem3_1 + Pitem4_1 + Pitem4_3;
+                if (PTotal != 100 && PTotal != 0)
+                {
+                    decimal[] arr = { Pitem1_1, Pitem1_2, Pitem1_3, Pitem1_4, Pitem2_1, Pitem3_1, Pitem4_1, Pitem4_3 };
+                    // 找到最小的值
+                    decimal minValue = arr.Where(x => x != 0).Min();
+
+                    // 找到最小值對應的索引
+                    int minIndex = Array.IndexOf(arr, minValue);
+
+                    // 增加1
+                    arr[minIndex] += 100 - PTotal; // 注意要使用decimal的1.0m
+
+                    // 更新原始變數的值
+                    Pitem1_1 = arr[0];
+                    Pitem1_2 = arr[1];
+                    Pitem1_3 = arr[2];
+                    Pitem1_4 = arr[3];
+                    Pitem2_1 = arr[4];
+                    Pitem3_1 = arr[5];
+                    Pitem4_1 = arr[6];
+                    Pitem4_3 = arr[7];
+                }
+                PTotalitem1 = Pitem1_1 + Pitem1_2 + Pitem1_3 + Pitem1_4;
+                PTotalitem4 = Pitem4_1 + Pitem4_3;
+
+            }
+            <table border="1" style="width: 100%; border-collapse:collapse;" id="myTable" class="table-responsive fixed-table  textcenter">
+                <tr class="theadcolor">
+                    <td width="10%">範疇別</td>
+                    <td width="10%">類別</td>
+                    <td></td>
+                    <td>公噸CO<sub>2</sub>e</td>
+                    <td>占比</td>
+
+                </tr>
+                <tr class="theadcolor">
+                    <th>範疇1</th>
+                    <th>類別1</th>
+                    <th class="textleft">直接溫室氣體排放與移除</th>
+                    <th>@Totalitem1</th>
+                    <th>@PTotalitem1%</th>
+
+                </tr>
+                <tr class="theadcolor ">
+                    <td></td>
+                    <td></td>
+                    <td class="textleft">1.1固定式燃燒源之直接排放</td>
+                    <td>@item1_1</td>
+                    <td>@Pitem1_1%</td>
+
+                </tr>
+                <tr class="theadcolor">
+                    <td></td>
+                    <td></td>
+                    <td class="textleft">1.2移動式燃燒源之直接排放</td>
+                    <td>@item1_2</td>
+                    <td>@Pitem1_2%</td>
+                </tr>
+                <tr class="theadcolor">
+                    <td></td>
+                    <td></td>
+                    <td class="textleft">1.3產業過程之直接過程排放與移除</td>
+                    <td>@item1_3</td>
+                    <td>@Pitem1_3%</td>
+                </tr>
+                <tr class="theadcolor">
+                    <td></td>
+                    <td></td>
+                    <td class="textleft">1.4人為系統所釋放的溫室氣體產生的直接暫時性排放</td>
+                    <td>@item1_4</td>
+                    <td>@Pitem1_4%</td>
+                </tr>
+
+                <tr class="theadcolor">
+                    <th>範疇2</th>
+                    <th>類別2</th>
+                    <th class="textleft">由輸入能源產生之間接溫室氣體排放</th>
+                    <th>@item2_1</th>
+                    <th>@Pitem2_1%</th>
+                </tr>
+                <tr class="theadcolor">
+                    <td></td>
+                    <td></td>
+                    <td class="textleft">2.1來自輸入電力的間接排放</td>
+                    <td>@item2_1</td>
+                    <td>@Pitem2_1%</td>
+                </tr>
+                <tr class="theadcolor">
+                    <th>範疇3</th>
+                    <th>類別3</th>   
+                    <th class="textleft">由運輸產生之間接溫室氣體排放</th>
+                    <th>@item3_1</th>
+                    <th>@Pitem3_1%</th>
+                </tr>
+                <tr class="theadcolor">
+                    <td></td>
+                    <td></td>
+                    <td class="textleft">3.1由貨物上游運輸與配送產生之排放</td>
+                    <td>@item3_1</td>
+                    <td>@Pitem3_1%</td>
+                </tr>
+                <tr class="theadcolor">                  
+                    <th>範疇3</th>
+                    <th>類別4</th>
+                    <th class="textleft">由組織使用的產品所產生之間接溫室氣體排放</th>
+                    <th>@Totalitem4</th>
+                    <th>@PTotalitem4%</th>
+                </tr>
+                <tr class="theadcolor">
+                    <td></td>
+                    <td></td>
+                    <td class="textleft">4.1源自採購商品的排放</td>
+                    <td>@item4_1</td>
+                    <td>@Pitem4_1%</td>
+                </tr>
+                <tr class="theadcolor">
+                    <td></td>
+                    <td></td>
+                    <td class="textleft">4.3由處置固體與液體廢棄物產生之排放</td>
+                    <td>@item4_3</td>
+                    <td>@Pitem4_3%</td>
+                </tr>
+                <tr class="theadcolor">
+                    <td>合計</td>
+                    <td></td>
+                    <td></td>
+                    <td>@Total</td>
+                    <td>100.00%</td>
+                </tr>
+            </table>
+
+
+
+        </form>
+    </div>
+</div>

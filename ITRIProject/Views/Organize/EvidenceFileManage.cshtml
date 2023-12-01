@@ -1,0 +1,172 @@
+﻿@model ITRIProject.Models.View.ViewEvidenceFileManage
+@{
+    ViewData["Title"] = "佐證資料";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+
+<style nonce="@nonce">
+    table {
+        width: 100%;
+        height: 500px;
+    }
+</style>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-2">
+            <!-- 加入部分視圖，顯示左標題列 -->
+            @await Html.PartialAsync("Organize/Organize")
+        </div>
+        <div class="col-lg-10">
+            <div class='card'>
+                <h3>
+                    佐證資料
+                </h3>
+                @*        <form asp-action="EnergyUsedetail" method="get" id="EnergyUsedetail">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input name="search" type="text" placeholder="關鍵字搜尋" />
+                <input type="submit" value="查詢" class="btn btn-primary genbtn" />
+                <br />
+
+                </form>*@
+                <form asp-action="EvidenceFileManage" id="EvidenceFileManage">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <table border="1">
+                        <tr>
+                            <td style="width: 30%;">
+                                <div class="scrollable">
+                                    <div class="item">
+                                        <div class="item-header toggleItem">能源</div>
+                                        <div class="item-content">
+                                            @{
+                                                int EnergyNameCount = 1;
+                                                @foreach (var item in Model.Energyuse)
+                                                {
+                                                    <a href="~/OrganizeFile/EvidenceFileDetail?BasicId=@item.BasicId&ItemId=@item.Id&WhereForm=能源使用&closeButton=1" class="showContent">@EnergyNameCount @Model.Coefficient.Where(a => a.Id.ToString() == item.EnergyName && a.Type=="EnergyName").FirstOrDefault().Name (@Model.BasicdataFactoryaddresses.Where(a=>a.Id.ToString() == item.FactoryName).FirstOrDefault().Name - @item.EquipmentName)</a>
+                                                    <br />
+                                                    EnergyNameCount++;
+                                                }
+                                            }
+
+                                        </div>
+                                    </div>
+
+                                    <div class="item">
+                                        <div class="item-header toggleItem">資源</div>
+                                        <div class="item-content">
+                                            @{
+                                                int ResourceUseCount = 1;
+
+                                                @foreach (var item in Model.Resourceuse)
+                                                {
+                                                    <a href="~/OrganizeFile/EvidenceFileDetail?BasicId=@item.BasicId&ItemId=@item.Id&WhereForm=資源使用&closeButton=1" class="showContent">@ResourceUseCount @Model.Coefficient.Where(a => a.Id.ToString() == item.EnergyName && a.Type=="ResourceName").FirstOrDefault().Name</a>
+                                                    <br />
+                                                    ResourceUseCount++;
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="item">
+                                        <div class="item-header toggleItem">冷媒設備</div>
+                                        <div class="item-content">
+                                            <div class="item">
+                                                <div class="item-header toggleItem">無進行冷媒填充</div>
+                                                <div class="item-content">
+                                        @{
+                                            int EquipmentNameNoneCount = 1;
+                                            @foreach (var item in Model.RefrigerantNone)
+                                            {
+                                                            <a href="~/OrganizeFile/EvidenceFileDetail?BasicId=@item.BasicId&ItemId=@item.Id&WhereForm=冷媒逸散/無進行冷媒填充&closeButton=1" class="showContent">@EquipmentNameNoneCount  @item.EquipmentName</a>
+                                                            <br />
+                                                EquipmentNameNoneCount++;
+                                            }
+                                        }
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="item-header toggleItem">有進行冷媒填充</div>
+                                                <div class="item-content">
+                                        @{
+                                            int EquipmentNameCount = 1;
+                                            @foreach (var item in Model.RefrigerantHave)
+                                            {
+                                                            <a href="~/OrganizeFile/EvidenceFileDetail?BasicId=@item.BasicId&ItemId=@item.Id&WhereForm=冷媒逸散/有進行冷媒填充&closeButton=1" class="showContent">@EquipmentNameCount  @item.EquipmentName</a>
+                                                            <br />
+                                                EquipmentNameCount++;
+                                            }
+                                        }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <div class="item-header toggleItem">其他設備</div>
+                                        <div class="item-content">
+                                        @{
+                                            int FireequipmentCount = 1;
+
+
+                                            @foreach (var item in Model.Fireequipment)
+                                            {
+                                                    <a href="~/OrganizeFile/EvidenceFileDetail?BasicId=@item.BasicId&ItemId=@item.Id&WhereForm=消防設備&closeButton=1" class="showContent">@FireequipmentCount @Model.Coefficient.Where(a => a.Id.ToString() == item.EquipmentName && a.Type=="FireEquipmentName").FirstOrDefault().Name </a>
+                                                    <br />
+                                                FireequipmentCount++;
+                                            }
+                                        }
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <div class="item-header toggleItem">工作時數</div>
+                                        <div class="item-content">
+                                        @{
+                                            int FactoryCount = 0;
+                                            var convertedItem = "";
+                                            @foreach (var factory in Model.FactoryName)
+                                            {
+                                                    <div class="item">
+                                                        <div class="item-header toggleItem">@factory.Name</div>
+                                                        <div class="item-content">
+                                                            <a href="~/OrganizeFile/EvidenceFileDetail?BasicId=@factory.BasicId&ItemId=@Model.Workinghours_Item_0[@FactoryCount]?.Id&WhereForm=工時資料/@factory.Name&closeButton=1" class="showContent">1_正式員工及約聘人員(具勞保)</a><br>
+                                                            <a href="~/OrganizeFile/EvidenceFileDetail?BasicId=@factory.BasicId&ItemId=@Model.Workinghours_Item_1[@FactoryCount]?.Id&WhereForm=工時資料/@factory.Name&closeButton=1" class="showContent">2_廠商外派人員(不具勞保)</a>
+                                                        </div>
+                                                    </div>
+                                                FactoryCount++;
+                                            }
+                                        }
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <div class="item-header toggleItem">廢棄物</div>
+                                        <div class="item-content">
+                                        @{
+                                            int WasteNameCount = 1;
+                                            @foreach (var item in Model.DumptreatmentOutsourcing)
+                                            {
+                                                    <a href="~/OrganizeFile/EvidenceFileDetail?BasicId=@item.BasicId&ItemId=@item.Id&WhereForm=廢棄物處理&closeButton=1" class="showContent">
+                                                    @WasteNameCount @Model.Coefficient.Where(a=>a.Id==item.WasteId).Select(a => string.Concat(a.Name, " ", a.WasteMethod)).FirstOrDefault()
+                                                    </a>
+                                                    <br />
+                                                WasteNameCount++;
+                                            }
+                                        }
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td id="content-td" style="width: 70%;">
+                            </td>
+
+                        </tr>
+
+
+
+                    </table>
+                                        @*            <div class="form-group textcenter">
+                    <input type="submit" value="存檔" class="btn btn-primary genbtn" />
+                    </div>*@
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,344 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+    decimal ALLTotal = 0, AllCO2 = 0, AllCH4 = 0, AllN2O = 0, AllHFCs = 0, AllPFCs = 0, AllSF6 = 0;
+    decimal PALLTotal = 0, PAllCO2 = 0, PAllCH4 = 0, PAllN2O = 0, PAllHFCs = 0, PAllPFCs = 0, PAllSF6 = 0;
+    decimal Category1Total = 0, Category1CO2 = 0, Category1CH4 = 0, Category1N2O = 0, Category1HFCs = 0, Category1PFCs = 0, Category1SF6 = 0;
+    decimal PCategory1Total = 0, PCategory1CO2 = 0, PCategory1CH4 = 0, PCategory1N2O = 0, PCategory1HFCs = 0, PCategory1PFCs = 0, PCategory1SF6 = 0;
+    decimal EmissionSourceTotal = 0, ECategory1Total=0, Fixed = 0, Process = 0, Move = 0, Escape = 0, Energy = 0, Other = 0;
+    decimal PEmissionSourceTotal = 0, PECategory1Total = 0, PFixed = 0, PProcess = 0, PMove = 0, PEscape = 0, PEnergy = 0, POther = 0;
+
+    foreach (var AllGHG in ViewBag.AllGHG)
+    {
+        AllCO2 = Math.Round(AllGHG.CO2, 6);
+        AllCH4 = Math.Round(AllGHG.CH4, 6);
+        AllN2O = Math.Round(AllGHG.N2O, 6);
+        AllHFCs = Math.Round(AllGHG.HFCs, 6);
+        AllPFCs = Math.Round(AllGHG.PFCs, 6);
+        AllSF6 = Math.Round(AllGHG.SF6, 6);
+    }
+    AllCH4 += Math.Round(ViewBag.WorkinghourResult, 6);
+    ALLTotal = AllCO2 + AllCH4 + AllN2O + AllHFCs + AllPFCs + AllSF6;
+    if (ALLTotal != 0)
+    {
+        PAllCO2 = Math.Round(AllCO2 / ALLTotal * 100, 2);
+        PAllCH4 = Math.Round(AllCH4 / ALLTotal * 100, 2);
+        PAllN2O = Math.Round(AllN2O / ALLTotal * 100, 2);
+        PAllHFCs = Math.Round(AllHFCs / ALLTotal * 100, 2);
+        PAllPFCs = Math.Round(AllPFCs / ALLTotal * 100, 2);
+        PAllSF6 = Math.Round(AllSF6 / ALLTotal * 100, 2);
+    }
+    PALLTotal = PAllCO2 + PAllCH4 + PAllN2O + PAllHFCs + PAllPFCs + PAllSF6;
+    if (PALLTotal != 100 && PALLTotal != 0)
+    {
+        decimal[] arr = { PAllCO2, PAllCH4, PAllN2O, PAllHFCs, PAllPFCs, PAllSF6 };
+        // 找到最小的值
+        decimal minValue = arr.Where(x => x != 0).Min();
+
+        // 找到最小值對應的索引
+        int minIndex = Array.IndexOf(arr, minValue);
+
+        // 增加1
+        arr[minIndex] += 100 - PALLTotal; // 注意要使用decimal的1.0m
+
+        // 更新原始變數的值
+        PAllCO2 = arr[0];
+        PAllCH4 = arr[1];
+        PAllN2O = arr[2];
+        PAllHFCs = arr[3];
+        PAllPFCs = arr[4];
+        PAllSF6 = arr[5];
+    }
+
+    foreach (var Category1GHG in ViewBag.Category1GHG)
+    {
+        Category1CO2 = Math.Round(Category1GHG.CO2, 6);
+        Category1CH4 = Math.Round(Category1GHG.CH4, 6);
+        Category1N2O = Math.Round(Category1GHG.N2O, 6);
+        Category1HFCs = Math.Round(Category1GHG.HFCs, 6);
+        Category1PFCs = Math.Round(Category1GHG.PFCs, 6);
+        Category1SF6 = Math.Round(Category1GHG.SF6, 6);
+    }
+    Category1CH4 += Math.Round(ViewBag.WorkinghourResult, 6);
+    Category1Total = Category1CO2 + Category1CH4 + Category1N2O + Category1HFCs + Category1PFCs + Category1SF6;
+    if (Category1Total != 0)
+    {
+        PCategory1CO2 = Math.Round(Category1CO2 / Category1Total * 100, 2);
+        PCategory1CH4 = Math.Round(Category1CH4 / Category1Total * 100, 2);
+        PCategory1N2O = Math.Round(Category1N2O / Category1Total * 100, 2);
+        PCategory1HFCs = Math.Round(Category1HFCs / Category1Total * 100, 2);
+        PCategory1PFCs = Math.Round(Category1PFCs / Category1Total * 100, 2);
+        PCategory1SF6 = Math.Round(Category1SF6 / Category1Total * 100, 2);
+    }
+    PCategory1Total = PCategory1CO2 + PCategory1CH4 + PCategory1N2O + PCategory1HFCs + PCategory1PFCs + PCategory1SF6;
+    if (PCategory1Total != 100 && PCategory1Total != 0)
+    {
+        decimal[] arr = { PCategory1CO2, PCategory1CH4, PCategory1N2O, PCategory1HFCs, PCategory1PFCs, PCategory1SF6 };
+        // 找到最小的值
+        decimal minValue = arr.Where(x => x != 0).Min();
+
+        // 找到最小值對應的索引
+        int minIndex = Array.IndexOf(arr, minValue);
+
+        // 增加1
+        arr[minIndex] += 100 - PCategory1Total; // 注意要使用decimal的1.0m
+
+        // 更新原始變數的值
+        PCategory1CO2 = arr[0];
+        PCategory1CH4 = arr[1];
+        PCategory1N2O = arr[2];
+        PCategory1HFCs = arr[3];
+        PCategory1PFCs = arr[4];
+        PCategory1SF6 = arr[5];
+    }
+
+    foreach (var EmissionSource in ViewBag.EmissionSource)
+    {
+        switch (EmissionSource.EmissionSource)
+        {
+            case "107":
+                Fixed = Math.Round(EmissionSource.dataValue, 6);
+                break;
+            case "108":
+                Process = Math.Round(EmissionSource.dataValue, 6);
+                break;
+            case "109":
+                Move = Math.Round(EmissionSource.dataValue, 6);
+                break;
+            case "110":
+                Escape = Math.Round(EmissionSource.dataValue, 6);
+                break;
+            case "111":
+                Energy = Math.Round(EmissionSource.dataValue, 6);
+                break;
+            case "112":
+                Other = Math.Round(EmissionSource.dataValue, 6);
+                break;
+
+        }
+    }
+    Move += ViewBag.TransportationResultData;
+    Escape += Math.Round(ViewBag.WorkinghourResult, 6);
+    EmissionSourceTotal = Fixed + Process + Move + Escape + Energy + Other;
+    if (EmissionSourceTotal != 0)
+    {
+        PFixed = Math.Round(Fixed / EmissionSourceTotal * 100, 2);
+        PProcess = Math.Round(Process / EmissionSourceTotal * 100, 2);
+        PMove = Math.Round(Move / EmissionSourceTotal * 100, 2);
+        PEscape = Math.Round(Escape / EmissionSourceTotal * 100, 2);
+        PEnergy = Math.Round(Energy / EmissionSourceTotal * 100, 2);
+        POther = Math.Round(Other / EmissionSourceTotal * 100, 2);
+    }
+    PEmissionSourceTotal = PFixed + PProcess + PMove + PEscape + PEnergy + POther;
+    if (PEmissionSourceTotal != 100 && PEmissionSourceTotal != 0)
+    {
+        decimal[] arr = { PFixed, PProcess, PMove, PEscape, PEnergy, POther };
+        // 找到最小的值
+        decimal minValue = arr.Where(x => x != 0).Min();
+
+        // 找到最小值對應的索引
+        int minIndex = Array.IndexOf(arr, minValue);
+
+        // 增加1
+        arr[minIndex] += 100 - PEmissionSourceTotal; // 注意要使用decimal的1.0m
+
+        // 更新原始變數的值
+        PFixed = arr[0];
+        PProcess = arr[1];
+        PMove = arr[2];
+        PEscape = arr[3];
+        PEnergy = arr[4];
+        POther = arr[5];
+    }
+    ECategory1Total = Fixed + Process + Move + Escape;
+    PECategory1Total = PFixed + PProcess + PMove + PEscape;
+
+}
+@section Scripts {
+    <script nonce="@nonce">
+        // function exportToExcel() {
+        //     // 获取两个表格
+        //     var table1 = document.getElementById('myTable1');
+        //     var table2 = document.getElementById('myTable2');
+        //     var table3 = document.getElementById('myTable3');
+
+        //     // 获取两个表格的数据
+        //     var data1 = XLSX.utils.table_to_sheet(table1, { sheet: 'MySheet', raw: true, cellStyles: true, merge: true });
+        //     var data2 = XLSX.utils.table_to_sheet(table2, { sheet: 'MySheet', raw: true, cellStyles: true, merge: true });
+        //     var data3 = XLSX.utils.table_to_sheet(table3, { sheet: 'MySheet', raw: true, cellStyles: true, merge: true });
+
+        //     // 合并两个表格的数据到一个数组中
+        //     var dataArray = XLSX.utils.sheet_to_json(data1, { header: 1, merge: true });
+        //     dataArray.push([]); // 添加一行空白
+        //     dataArray = dataArray.concat(XLSX.utils.sheet_to_json(data2, { header: 1, merge: true }));
+        //     dataArray.push([]); // 添加一行空白
+        //     dataArray = dataArray.concat(XLSX.utils.sheet_to_json(data3, { header: 1, merge: true }));
+        //     console.log(dataArray);
+
+        //     // 将合并后的数组转换为工作表
+        //     var mergedData = XLSX.utils.aoa_to_sheet(dataArray);
+
+        //     // 将工作表添加到工作簿
+        //     var wb = XLSX.utils.book_new();
+        //     XLSX.utils.book_append_sheet(wb, mergedData, 'MySheet');
+
+        //     // 导出工作簿为 Excel 文件
+        //     XLSX.writeFile(wb, 'exported_data1.xlsx');
+
+        // }
+        $(".exportTables-btn").on("click", function () {
+            var filename = $(this).data('filename');
+            exportTables(filename);
+        });
+    </script>
+}
+<div class="row">
+    <div class="col-lg-2">
+        <!-- 加入部分視圖，顯示左標題列 -->
+        @await Html.PartialAsync("Organize/Organize")
+    </div>
+    <div class="col-lg-10">
+        <h3>
+            環保署報表
+
+        </h3>
+        <button data-filename="環保署報表" class="exportTables-btn">匯出結果</button>
+
+        <form asp-action="EPAReport" id="EPAReport">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <table border="1" style="width: 100%; border-collapse:collapse;" id="myTable1" class="table-responsive fixed-table  textcenter">
+                <tr class="theadcolor">
+                    <th colspan="10">彙整表二、全廠七大溫室氣體排放量統計表</th>
+
+                </tr>
+                <tr class="theadcolor">
+                    <th></th>
+                    <th>CO<sub>2</sub></th>
+                    <th>CH<sub>4</sub></th>
+                    <th>N<sub>2</sub>O</th>
+                    <th>HFCs</th>
+                    <th>PFCs</th>
+                    <th>SF<sub>6</sub></th>
+                    <th>NF<sub>3</sub></th>
+                    <th>七種溫室氣體年總排放當量</th>
+                    <th>生質排放當量</th>
+                </tr>
+                <tr class="theadcolor">
+                    <th><label>排放當量<br />(公噸CO<sub>2e</sub>/年</label>)</th>
+                    <td><label>@AllCO2</label></td>
+                    <td><label>@AllCH4</label></td>
+                    <td><label>@AllN2O</label></td>
+                    <td><label>@AllHFCs</label></td>
+                    <td><label>@AllPFCs</label></td>
+                    <td><label>@AllSF6</label></td>
+                    <td><label>0.0000</label></td>
+                    <td><label>@ALLTotal</label></td>
+                    <td><label>0.0000</label></td>
+                </tr>
+                <tr class="theadcolor">
+                    <th><label>氣體別占比<br />(%)</label></th>
+                    <td><label>@PAllCO2%</label></td>
+                    <td><label>@PAllCH4%</label></td>
+                    <td><label>@PAllN2O%</label></td>
+                    <td><label>@PAllHFCs%</label></td>
+                    <td><label>@PAllPFCs%</label></td>
+                    <td><label>@PAllSF6%</label></td>
+                    <td><label>0.00%</label></td>
+                    <td><label>100%</label></td>
+                    <td><label>-</label></td>
+                </tr>
+            </table>
+            <br />
+            <table border="1" style="width: 100%; border-collapse:collapse;" id="myTable2" class="table-responsive fixed-table  textcenter">
+                <tr class="theadcolor">
+                    <th colspan="9">彙整表三、範疇一全廠七大溫室氣體排放量統計表</th>
+
+                </tr>
+                <tr class="theadcolor">
+                    <th></th>
+                    <th>CO<sub>2</sub></th>
+                    <th>CH<sub>4</sub></th>
+                    <th>N<sub>2</sub>O</th>
+                    <th>HFCs</th>
+                    <th>PFCs</th>
+                    <th>SF<sub>6</sub></th>
+                    <th>NF<sub>3</sub></th>
+                    <th>範疇一七種溫室氣體年總排放當量</th>
+                </tr>
+                <tr class="theadcolor">
+                    <th><label>排放當量<br />(公噸CO<sub>2e</sub>/年)</label></th>
+                    <td><label>@Category1CO2</label></td>
+                    <td><label>@Category1CH4</label></td>
+                    <td><label>@Category1N2O</label></td>
+                    <td><label>@Category1HFCs</label></td>
+                    <td><label>@Category1PFCs</label></td>
+                    <td><label>@Category1SF6</label></td>
+                    <td><label>0.0000</label></td>
+                    <td><label>@Category1Total</label></td>
+                </tr>
+                <tr class="theadcolor">
+                    <th><label>氣體別占比<br />(%)</label></th>
+                    <td><label>@PCategory1CO2%</label></td>
+                    <td><label>@PCategory1CH4%</label></td>
+                    <td><label>@PCategory1N2O%</label></td>
+                    <td><label>@PCategory1HFCs%</label></td>
+                    <td><label>@PCategory1PFCs%</label></td>
+                    <td><label>@PCategory1SF6%</label></td>
+                    <td><label>0.00%</label></td>
+                    <td><label>100%</label></td>
+                </tr>
+            </table>
+            <br />
+            <table border="1" style="width: 100%; border-collapse:collapse;" id="myTable3" class="table-responsive fixed-table  textcenter">
+                <tr class="theadcolor">
+                    <th colspan="8">彙整表四、全廠溫室氣體範疇別及範疇一排放形式排放量統計表</th>
+
+                </tr>
+                <tr class="theadcolor">
+                    <th rowspan="2"></th>
+                    <th colspan="4">範疇1</th>
+                    <th>範疇2</th>
+                    <th>範疇3</th>
+                    <th rowspan="2">總排放當量</th>
+                </tr>
+                <tr class="theadcolor">
+                    <th>固定排放</th>
+                    <th>製程排放</th>
+                    <th>移動排放</th>
+                    <th>逸散排放</th>
+                    <th>能源間接排放</th>
+                    <th>其他間接排放</th>
+                </tr>
+                <tr class="theadcolor">
+                    <th rowspan="2"><label>排放當量<br />(公噸CO<sub>2e</sub>/年</label></th>
+                    <td colspan="4"><label>@ECategory1Total</label></td>
+                    <td rowspan="2"><label>@Energy</label></td>
+                    <td rowspan="2"><label>@Other</label></td>
+                    <td rowspan="2"><label>@EmissionSourceTotal</label></td>
+                </tr>
+                <tr class="theadcolor">
+                    <td><label>@Fixed</label></td>
+                    <td><label>@Process</label></td>
+                    <td><label>@Move</label></td>
+                    <td><label>@Escape</label></td>
+                </tr>
+                <tr class="theadcolor">
+                    <th rowspan="2"><label>氣體別占比<br />(%)</label></th>
+                    <td colspan="4"><label>@PECategory1Total%</label></td>
+                    <td rowspan="2"><label>@PEnergy%</label></td>
+                    <td rowspan="2"><label>@POther%</label></td>
+                    <td rowspan="2"><label>100%</label></td>
+                </tr>
+                <tr class="theadcolor">
+                    <td><label>@PFixed%</label></td>
+                    <td><label>@PProcess%</label></td>
+                    <td><label>@PMove%</label></td>
+                    <td><label>@PEscape%</label></td>
+                </tr>
+            </table>
+
+        </form>
+    </div>
+</div>

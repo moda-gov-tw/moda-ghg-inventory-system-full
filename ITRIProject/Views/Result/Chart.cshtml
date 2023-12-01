@@ -1,0 +1,228 @@
+﻿@{
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+
+}
+<style nonce="@nonce">
+    table {
+        border-collapse: collapse;
+    }
+
+    table, th, td {
+        border: none;
+    }
+
+    tbody tr:nth-child(even) td {
+        background-color: #fff; /* 偶數行灰色背景 */
+    }
+</style>
+<div class="row">
+    <div class="col-lg-2" id="layout">
+        <!-- 加入部分視圖，顯示左標題列 -->
+        @await Html.PartialAsync("Organize/Organize")
+    </div>
+
+    <div class="col-lg-10" id="tableToPrint">
+        <button id="btn" class="printChart-btn">匯出圖表</button>
+
+        <table style="width:100%" >
+            <tr>
+                <td>
+                    <div id="AllFactory" style="width: 600px; height: 300px;"></div>
+                </td>
+                <td>
+                    <div id="Direct" style="width: 600px; height: 300px;"></div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div id="EmissionPattern" style="width: 600px; height: 300px;"></div>
+                </td>
+                <td>
+                    <div id="EmissionType" style="width: 600px; height: 300px;"></div>
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
+</div>
+
+@section Scripts{
+    <script nonce="@nonce">
+        var AllGHG = @Html.Raw(ViewBag.AllGHG);      
+        var AllFactoryData = [];
+        for (var i = 0; i < AllGHG.length; i++) {
+            var values = Object.values(AllGHG[i]);
+            AllFactoryData.push(values);
+        }
+    let AllFactory = document.getElementById('AllFactory');
+    let AllFactoryChart = echarts.init(AllFactory);
+    let AllFactoryoption;
+
+    AllFactoryoption = {
+        title: {
+            text: '〔全廠〕溫室氣體別排放量',
+            left: 'center'
+
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: ['CO2', 'CH4', 'N2O', 'HFCs', 'PFCs', 'SF6', 'NF3']
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                    data: AllFactoryData[0],
+                type: 'bar',
+                showBackground: true,
+                backgroundStyle: {
+                    color: 'rgba(180, 180, 180, 0.2)'
+                }
+            }
+        ]
+    };
+
+    AllFactoryoption && AllFactoryChart.setOption(AllFactoryoption);
+
+
+        var Category1GHG = @Html.Raw(ViewBag.Category1GHG);
+        console.log(Category1GHG);
+        var DirectData = [];
+        for (var i = 0; i < Category1GHG.length; i++) {
+            var values = Object.values(Category1GHG[i]);
+            DirectData.push(values);
+        }
+    let Direct = document.getElementById('Direct');
+    let DirectChart = echarts.init(Direct);
+    let Directoption;
+
+    Directoption = {
+        title: {
+            text: '〔直接〕溫室氣體別排放量',
+            left: 'center'
+
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: ['CO2', 'CH4', 'N2O', 'HFCs', 'PFCs', 'SF6', 'NF3']
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                data: DirectData[0],
+                type: 'bar',
+                showBackground: true,
+                backgroundStyle: {
+                    color: 'rgba(180, 180, 180, 0.2)'
+                }
+            }
+        ]
+    };
+
+    Directoption && DirectChart.setOption(Directoption);
+
+        var EmissionSource = @Html.Raw(ViewBag.EmissionSource);
+        var echartsData = EmissionSource.map(item => ({
+            name: item.EmissionSource, // 使用 EmissionSource 作为数据点的名称
+            value: item.dataValue // 使用 dataValue 作为数据点的值
+        }));
+        console.log(EmissionSource)
+        console.log(echartsData)
+    let EmissionPattern = document.getElementById('EmissionPattern');
+    let EmissionChart = echarts.init(EmissionPattern);
+    let Emissionoption;
+
+    Emissionoption = {
+        title: {
+            text: '溫室氣體排放型式排放量',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'item'
+        },
+
+        series: [
+            {
+                label: {
+                    show: true,
+                    formatter(param) {
+                        // correct the percentage
+                        return param.name + ' (' + param.percent + '%)';
+                    }
+                },
+                type: 'pie',
+                radius: '50%',
+                    data: echartsData,
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        ]
+    };
+
+    Emissionoption && EmissionChart.setOption(Emissionoption);
+        var GHGType = @Html.Raw(ViewBag.GHGType);
+        console.log(GHGType)
+        var GHGTypeData = GHGType.map(item => ({
+            name: item.GHGType, // 使用 EmissionSource 作为数据点的名称
+            value: item.dataValue // 使用 dataValue 作为数据点的值
+        }));
+        let EmissionType = document.getElementById('EmissionType');
+        let EmissionTypeChart = echarts.init(EmissionType);
+        let EEmissionTypeoption;
+
+        EEmissionTypeoption = {
+            title: {
+                text: '溫室氣體種類排放量',
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'item'
+            },
+
+            series: [
+                {
+                    label: {
+                        show: true,
+                        formatter(param) {
+                            // correct the percentage
+                            return param.name + ' (' + param.percent + '%)';
+                        }
+                    },
+                    type: 'pie',
+                    radius: '50%',
+                    data: GHGTypeData,
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+
+        EEmissionTypeoption && EmissionTypeChart.setOption(EEmissionTypeoption);
+    </script>
+}

@@ -1,0 +1,114 @@
+﻿@{
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+<style nonce="@nonce">
+    .sideBackground {
+        background-color: #f9caac;
+    }
+
+    a {
+        color: black;
+    }
+
+    .active {
+        background-color: lightblue;
+        /* You can customize the background color here */
+    }
+
+    .sidebar {
+        color: black;
+    }
+
+    
+</style>
+
+
+<div class="site-content">
+    <div class="sideBackground">
+        <div class="container-fluid" id="sideMenu">
+            <h4>溫室氣體盤查</h4>
+            <label id="inventory"></label>
+
+            <!-- 基本資料 -->
+            <div class="card">
+                <div class="card-header @(ViewContext.RouteData.Values["action"].ToString() == "BasicData" ? "active" : "")">
+
+                    <a class="btn btn-link btn-block text-left sidebar"
+                       aria-controls="collapse1" href="/Organize/BasicData/@ViewBag.Basicid">基本資料</a>
+                </div>
+
+            </div>
+            @if (ViewBag.Basicid != null)
+            {
+
+
+                <!-- 內部盤查 -->
+                <div class="card">
+                    <div class="card-header" id="heading2">
+                        <h5 class="mb-0">
+                            <button class="btn btn-block text-left sidebar" type="button" data-toggle="collapse"
+                                    data-target="#collapse2" aria-expanded="false" aria-controls="collapse2"
+                                    >
+                                活動數據
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapse2" class="@(ViewContext.RouteData.Values["action"].ToString() == "EnergyUse" || ViewContext.RouteData.Values["action"].ToString() == "ResourceUse"|| ViewContext.RouteData.Values["action"].ToString() == "RefrigerantNone"|| ViewContext.RouteData.Values["action"].ToString() == "RefrigerantHave"
+                || ViewContext.RouteData.Values["action"].ToString() == "Fireequipment" || ViewContext.RouteData.Values["action"].ToString() == "Workinghour" || ViewContext.RouteData.Values["action"].ToString() == "DumptreatmentOutsourcing"||ViewContext.RouteData.Values["action"].ToString() == "EvidenceFileManage" ? "collapse.show" : "collapse")" aria-labelledby="heading2" data-parent="#sideMenu">
+                        <div class="card text-center">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "EnergyUse" ? "active" : "")" href="/Organize/EnergyUse/@ViewBag.Basicid">能源</a>
+                        </div>
+                        <div class="card text-center">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "ResourceUse" ? "active" : "")" href="/Organize/ResourceUse/@ViewBag.Basicid">資源</a>
+                        </div>
+                        <div class="card text-center">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "RefrigerantNone" || ViewContext.RouteData.Values["action"].ToString() == "RefrigerantHave"  ? "active" : "")" href="/Organize/RefrigerantNone/@ViewBag.Basicid">冷媒設備</a>
+                        </div>
+                        <div class="card text-center">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Fireequipment" ? "active" : "")" href="/Organize/Fireequipment/@ViewBag.Basicid">其他設備</a>
+                        </div>
+                        <div class="card text-center">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Workinghour" ? "active" : "")" href="/Organize/Workinghour/@ViewBag.Basicid">工作時數</a>
+                        </div>
+                        <div class="card text-center">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "DumptreatmentOutsourcing" ? "active" : "")" href="/Organize/DumptreatmentOutsourcing/@ViewBag.Basicid">廢棄物</a>
+                        </div>
+                        <div class="card text-center">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "EvidenceFileManage" ? "active" : "")" href="/Organize/EvidenceFileManage/@ViewBag.Basicid">佐證資料</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- 結果與報告 -->
+                <div class="card">
+                    <div class="card-header" id="heading3">
+                        <h5 class="mb-0">
+                            <button class="btn btn-block text-left" type="button" data-toggle="collapse"
+                                    data-target="#collapse3" aria-expanded="false" aria-controls="collapse3"
+                                    >
+                                <a href="#" >結果與報告</a>
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="collapse3" class="@(ViewContext.RouteData.Values["action"].ToString() == "OrganizeReport" || ViewContext.RouteData.Values["action"].ToString() == "EPAReport" ||ViewContext.RouteData.Values["action"].ToString() == "Chart"  ? "collapse.show" : "collapse")" aria-labelledby="heading3" data-parent="#sideMenu">
+                        <div class="card text-center">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "OrganizeReport" ? "active" : "")" href="/Result/OrganizeReport/@ViewBag.Basicid">組織型溫盤報告書</a>
+                        </div>
+                        <div class="card text-center">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "EPAReport" ? "active" : "")" href="/Result/EPAReport/@ViewBag.Basicid">環保署報表</a>
+                        </div>
+                        <div class="card text-center">
+                            <a class="nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Chart" ? "active" : "")" href="/Result/Chart/@ViewBag.Basicid">儀表板</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+
+    </div>
+</div>
+<script nonce="@nonce" src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script nonce="@nonce" src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+

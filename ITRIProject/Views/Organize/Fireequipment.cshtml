@@ -1,0 +1,288 @@
+﻿@using Newtonsoft.Json;
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@{
+    ViewData["Title"] = "Fireequipment";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+@section Scripts {
+    <script nonce="@nonce">
+
+        //工廠選項
+        var factory = @Html.Raw(ViewBag.Factory);
+        var factoryItems = factory.map(function (item) {
+            return { name: item.Name, value: item.Id };
+        });
+        //溫室氣體種類
+        var GhgType = @Html.Raw(ViewBag.GHGType);
+        var GhgTypeItems = GhgType.map(function (item) {
+            return { name: item.Name, value: item.Code };
+        });
+        //單位選項
+        var Unit = @Html.Raw(ViewBag.Unit);
+        var unitItems = Unit.map(function (item) {
+            return { name: item.Name, value: item.Code };
+        });
+        //消防設備
+        var FireEquipment = @Html.Raw(ViewBag.FireEquipment);
+        var FireEquipmentItems = FireEquipment.map(function (item) {
+            return { name: item.Name, value: item.Id };
+        });
+        var url = new URL(window.location.href);
+        var basicid = url.pathname.split('/').pop(); // 從 URL 的路徑部分中獲取最後一個值作為 id
+        console.log(@Html.Raw(ViewBag.DeatilsJson));
+        $("#table1").jsGrid({
+            inserting: true,
+            editing: true,
+
+            sorting: true,
+            paging: false,
+            rownumbers: true,
+            pageLoading: false,
+            autoload: false,
+            width: "100%",
+            height: "100%",
+            data: @Html.Raw(ViewBag.DeatilsJson),//如果data有值，一載入時顯示
+            //rowClick: function (args) {
+            //    // 點擊行時的處理邏輯
+            //    console.log("Clicked row: ", args.item);
+            //},
+            controller: {
+                //載入
+                loadData: function (filter) {
+                    return $.ajax({
+                        type: "GET",
+                        url: "/Tools/Fireequipment?basicid=" + basicid + "&&type=LoadData",
+                        dataType: "json",
+                        data: filter
+                    }).done(function (response) {
+                        if (response.success === false) {
+                            alert(response.error);
+                            window.location.href = "/Member/Login"; // 導向錯誤頁面
+                        }
+                    });
+                },
+                //新增
+                insertItem: function (item) {
+                    return $.ajax({
+                        type: "POST",
+                        url: "/Tools/Fireequipment?basicid=" + basicid + "&&type=add",
+                        data: item
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+                    });
+                },
+                //修改
+                updateItem: function (item) {
+                    return $.ajax({
+                        type: "POST",
+                        url: "/Tools/Fireequipment?basicid=" + basicid + "&&type=Edit",
+                        data: item,
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+
+                    });
+
+                },
+                //刪除
+                deleteItem: function (item) {
+                    return $.ajax({
+                        type: "POST",
+                        url: "/Tools/Fireequipment?basicid=" + basicid + "&&type=delete",
+                        data: item
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+                    });
+                },
+            },
+            fields: [
+                { name: "sort", title: "編號", type: "rownumbers", width: 40, align: "center" },
+                { name: "factoryname", title: "<span style='color: red;'>*</span>場域", type: "select", items: factoryItems, valueField: "value", textField: "name", width: 60, align: "center" },
+                { name: "equipmentname", title: "<span style='color: red;'>*</span>設備名稱", type: "select", items: FireEquipmentItems, valueField: "value", textField: "name", width: 70, align: "center" },
+                { name: "category", title: "類別", type: "text", width: 50, align: "center", inserting: false, editing: false },
+                {
+                name: "ghgtype", title: "<span style='color: red;'>*</span>溫室氣體種類", type: "select", items: GhgTypeItems, valueField: "value", textField: "name", width: 80, align: "center"
+            },
+                { name: "remark", title: "備註", type: "text", width: 50, align: "center" },
+                { name: "beforetotal", title: "總量", type: "text", width: 70, align: "center", inserting: false, editing: false },
+                { name: "beforeunit", title: "單位", type: "text", width: 80, align: "center", inserting: false, editing: false },
+                //{
+                //name: "convertnum", title: "<span style='color: red;'>*</span>單位轉換之值<br><label class=\"tooltips\" onmouseover=\"showTooltip(event)\" onmouseout=\"hideTooltip()\"><img class=\"resize-image\" src=\"../../Img/QuestionMark2.png\" /><span class=\"tooltips-text\"><label style=\"font-size: 10px;\"><br>請與係數管理者討論數據需換算為哪一單位後再填寫</label></ span > </label>", type: "text", width: 80, align: "center", validate: [{
+                //    validator: function (value, item) {
+                //            var num = parseFloat(value);
+                //            return num > 0 && /^-?\d+(\.\d{1,4})?$/.test(value);//判斷是否為大於0的數，小數點限制4位
+                //        },
+                //    message: "單位轉換之值，請輸入大於0的數字，最多4位小數"
+                //    }]
+                //},
+                //{ name: "convertunit", title: "單位轉換之單位", type: "text", width: 100, align: "center", inserting: false, editing: false },
+                //{ name: "aferttotal", title: "轉換後總量", type: "text", width: 70, align: "center", inserting: false, editing: false },
+                //{ name: "afertUnit", title: "<span style='color: red;'>*</span>轉換後單位", type: "select", items: unitItems, valueField: "value", textField: "name", width: 90, align: "center" },
+                {
+                name: "distributeratio", title: "<span style='color: red;'>*</span>分配比率(%)", type: "text", width: 60, align: "center", validate: [{
+                    validator: function (value, item) {
+                        var num = parseFloat(value);
+                        return num > 0 && num <= 100 && /^-?\d+(\.\d{1,2})?$/.test(value);//判斷是否介於0-100的數，小數點限制2位
+                    },
+                    message: "分配比率(%)，請輸入介於0-100之間的數，最多2位小數"
+                }]
+                }, 
+                {
+                    name: "detail", title: "詳細資料", width: 90, align: "center",
+                    itemTemplate: function (value, item) {
+                    return $(`<img src=\"/Img/look.png\" class='CallSubwin-btn' data-id='${item.id}'  data-basicid='${basicid}'  data-equipmentname='${item.equipmentname}'>`);//(該筆資料的id，基本資料ID，能源別)
+                }
+                },
+
+                                { type: "control", editButton: true, modeSwitchButton: true },
+               {
+                    name: "evidencefile",
+                title: "佐證資料",
+                    itemTemplate: function (value, item) {
+                    return $(`<img src=\"/Img/edit.png\" class='CallFileManage-btn' data-id='${item.id}'  data-basicid='${basicid}'  data-equipmentname='${item.equipmentname}'>`);//(該筆資料的id，基本資料ID，冷媒逸散&填充名稱)
+
+                    },
+                    width: 90,
+                    align: "center"
+                }
+            ]
+        });
+        $(document).on("click", ".CallSubwin-btn", function () {
+            var id = $(this).data('id');
+            var basicid = $(this).data('basicid');
+            var equipmentname = $(this).data('equipmentname');
+            var url = '/OrganizeDetail/Fireequipmentdetail?id=' + id + "&&BasicId=" + basicid;//id為該筆item的id
+            window.open(url, "_blank", "width=1200,height=600,resizable=no,location=no,scrollbars=no,status=no");
+        });
+        $(document).on("click", ".CallFileManage-btn", function () {
+            var id = $(this).data('id');
+            var basicid = $(this).data('basicid');
+            var equipmentname = String($(this).data('equipmentname'));
+            var selectedName = FireEquipmentItems.find(function (item) {
+                return item.value === equipmentname;
+            }).name;
+            var url = '/OrganizeFile/EvidenceFileDetail?BasicId=' + basicid + '&ItemId=' + id + '&WhereForm=消防設備';//id為該筆item的id
+            subinitB('1000px', '100%', url, '佐證資料-' + selectedName);
+        });
+
+
+        function ImportExcel() {
+            location.href = '../../OrganizeExcel/FireequipmentImportExcel?BasicId=' + basicid;
+        }
+
+
+        function ExportExcel() {
+            var factoryNames = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.Factory)));
+            var Units = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.Unit)));
+            var fireEquipments = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.FireEquipment)));
+            var GHGType = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.GHGType)));
+            var monthcount = (@ViewBag.monthcount);
+            var year = (@ViewBag.year - 1911);
+            var month = (@ViewBag.month);
+            // 在這裡調用 ExportExcel_Fireequipment 函數並傳遞相應的參數
+            ExportExcel_Fireequipment(factoryNames, Units, fireEquipments, GHGType, monthcount, year, month);
+        }
+
+        //CSV
+        function ImportCSV() {
+            location.href = '../../OrganizeCSV/FireequipmentImport?BasicId=' + basicid;
+        }
+        function ExportCSV() {
+            var monthcount = (@ViewBag.monthcount);
+            var year = (@ViewBag.year - 1911);
+            var month = (@ViewBag.month);
+
+            ExportCSV_Fireequipment(monthcount, year, month);
+        }
+
+        //Json
+        function ImportJSON() {
+            location.href = '../../OrganizeJSON/FireequipmentImport?BasicId=' + basicid;
+        }
+        function ExportJSON() {
+            var monthcount = (@ViewBag.monthcount);
+            var year = (@ViewBag.year - 1911);
+            var month = (@ViewBag.month);
+
+            ExportJSON_Fireequipment(monthcount, year, month);
+        }
+        $(".exportExcel").on("click", function () {
+            ExportExcel();
+        });
+        $(".exportCSV").on("click", function () {
+            ExportCSV();
+        });
+        $(".exportJSON").on("click", function () {
+            ExportJSON();
+        });
+
+        $(".importExcel").on("click", function () {
+            ImportExcel();
+        });
+        $(".importCSV").on("click", function () {
+            ImportCSV();
+        });
+        $(".importJSON").on("click", function () {
+            ImportJSON();
+        });
+    </script>
+
+}
+
+<div class="container-fluid">
+<div class="row">
+    <div class="col-lg-2">
+        <!-- 加入部分視圖，顯示左標題列 -->
+        @await Html.PartialAsync("Organize/Organize")
+    </div>
+    <div class="col-lg-10">
+    <div class="card">
+        <h3>
+            其他設備
+            <label class="tooltips">
+                @*懸浮文字文字*@
+                <img src="~/Img/QuestionMark.png" class="QuestionMark" />
+
+                <span class="tooltips-text">
+                    請確認盤查時間內是否有新購或回填的其他逸散設備支數。<br />
+                    例如CO2(5p、10p、15p 分開)滅火器、BC型乾粉滅火器、KBC型乾粉滅火器、FM200、SF6氣體斷路器…<br />
+                </span>
+            </label>
+            <a href="../../systemfile/其他逸散設備範本.pdf" target="_blank">
+                <button class="genbtn">範本</button>
+            </a>
+        </h3>
+
+                    <div style="margin: 10px 0;">
+
+                        <button class="genbtn exportExcel" value="">下載Excel範例</button>
+                        <button class="genbtn importExcel" value="">匯入Excel</button>
+                        <button class="genbtn exportCSV" value="">下載CSV範例</button>
+                        <button class="genbtn importCSV" value="">匯入CSV</button>
+                        <button class="genbtn exportJSON" value="">下載JSON範例</button>
+                        <button class="genbtn importJSON" value="">匯入JSON</button>
+        </div>
+        
+        <form asp-action="Fireequipment" method="get" id="Fireequipment">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+@*             <input name="search" type="text" placeholder="關鍵字搜尋" />
+            <input type="submit" value="查詢" class="btn btn-primary genbtn" /> *@
+            <div class="scrollable-container jsgrid" style="height:500px">
+                <div id="table1"></div>
+            </div>
+            <br />
+
+        </form>
+        <form asp-action="Fireequipment" id="Fireequipment">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group textcenter">
+                <input type="submit" value="下一頁" class="btn btn-primary genbtn" />
+            </div>
+
+        </form>
+    </div>
+</div>
+</div>
+</div>

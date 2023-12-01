@@ -1,0 +1,175 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@{
+    ViewData["Title"] = "ManageSetting";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+@section Scripts {
+    <script nonce="@nonce">               
+        console.log(@Html.Raw(ViewBag.data));
+        $("#table1").jsGrid({
+            inserting: true,
+            editing: true,
+            sorting: true,
+            paging: false,
+            rownumbers: true,
+            pageLoading: false,
+            autoload: false,
+            width: "1250px",
+            height: "100%",
+            data: @Html.Raw(ViewBag.data),//如果data有值，一載入時顯示
+            //rowClick: function (args) {
+            //    // 點擊行時的處理邏輯
+            //    console.log("Clicked row: ", args.item);
+            //},
+            controller: {
+                //載入
+                loadData: function (filter) {
+                    return $.ajax({
+                        type: "GET",
+                        url: "/Tools/ManageSetting?"  + "&&type=LoadData",
+                        dataType: "json",
+                        data: filter
+                    }).done(function (response) {
+                        if (response.success === false) {
+                            alert(response.error);
+                            window.location.href = "/Member/Login"; // 導向錯誤頁面
+                        }
+                    });
+                },
+                //新增
+                insertItem: function (item) {
+                    return $.ajax({
+                        type: "POST",
+                        url: "/Tools/ManageSetting?"  + "&&type=add",
+                        data: item
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+                    });
+                },
+                //修改
+                updateItem: function (item) {
+                    return $.ajax({
+                        type: "POST",
+                        url: "/Tools/ManageSetting?" + "&&type=Edit",
+                        data: item,
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+
+                    });
+
+                },
+                //刪除
+                deleteItem: function (item) {
+                    return $.ajax({
+                        type: "GET",
+                        url: "/Tools/ManageSetting?"+ "&&type=delete",
+                        data: item
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+                    });
+                },
+            },
+            onItemUpdating: function (args) {
+                var suppliername = args.item.suppliername;
+
+                // 取得目前 jsGrid 上的所有資料
+                var gridData = $("#table1").jsGrid("option", "data");
+
+                // 排除掉自己這一筆資料
+                var editedItemIndex = args.itemIndex;
+                var otherItems = gridData.filter(function (item, index) {
+                    return index !== editedItemIndex;
+                });
+
+                // 檢查供應商名稱是否存在於其他資料中
+                var issuppliernameExists = otherItems.some(function (item) {
+                    return item.suppliername === suppliername;
+                });
+
+                if (issuppliernameExists) {
+                    alert("供應商名稱已存在，不允許修改");
+                    args.cancel = true;
+                }
+            },
+
+            onItemInserting: function (args) {
+                var suppliername = args.item.suppliername;
+
+                // 取得目前 jsGrid 上的所有資料
+                var gridData = $("#table1").jsGrid("option", "data");
+
+                // 檢查供應商名稱是否存在於目前資料中
+                var issuppliernameExists = gridData.some(function (item) {
+                    return item.suppliername === suppliername;
+                });
+
+                if (issuppliernameExists) {
+                    alert("供應商名稱已存在，不允許新增");
+                    args.cancel = true;
+                }
+            },
+            fields: [
+                { name: "sort", title: "編號", type: "rownumbers", width: 20 , align: "center" },
+                {
+                    name: "suppliername", title: "<span style='color: red;'>*</span>供應商名稱", type: "text", width: 50, align: "center", validate: [{
+                        validator: function (value, item) {
+                            return value !== null && value !== ""; // 檢查是否為非空值
+                        },
+                        message: "供應商名稱必填項目"
+                    }]
+                },
+                {
+                    name: "supplieraddress", title: "<span style='color: red;'>*</span>供應商地址", type: "text", width: 50, align: "center", validate: [{
+                        validator: function (value, item) {
+                            return value !== null && value !== ""; // 檢查是否為非空值
+                        },
+                        message: "供應商地址必填項目"
+                    }]
+                },
+                { type: "control", editButton: true, modeSwitchButton: true },
+            ]
+        });
+        
+    
+    </script>
+
+}
+
+<div class="container">
+    <div class="title-box">
+        @await Html.PartialAsync("Title/Title")
+
+    </div>
+    <div class="">
+
+        <h3>
+            供應商管理
+            <label class="tooltips" onmouseover="showTooltip(event)" onmouseout="hideTooltip()">
+                @*懸浮文字文字*@
+                <img class="QuestionMark" src="~/Img/QuestionMark.png" />
+
+                <span class="tooltips-text">
+                    為計算正確的運輸距離，供應商地址請填寫廠商實際所在位置
+                </span>
+            </label>
+        </h3>
+
+        <form asp-action="ManageSetting" method="get" id="ManageSetting">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="scrollable-container jsgrid" style="height:500px">
+                <div id="table1"></div>
+            </div>
+            <br />
+
+        </form>
+        <form asp-action="ManageSetting" id="ManageSetting">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+
+        </form>
+    </div>
+</div>

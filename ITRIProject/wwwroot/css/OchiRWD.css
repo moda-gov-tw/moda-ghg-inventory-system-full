@@ -1,0 +1,75 @@
+@charset "utf-8";
+/* RWD處理:外部連結 */
+.HeaderOtherLinkWrapper{display:inline-block;}
+#HeaderOtherLink ul{margin:0 0 0 -30px; display:inline-block; vertical-align:middle;}
+#HeaderOtherLink li{list-style:none; text-align:left; float:left; padding-right:6px; color:#999;}
+#HeaderOtherLink li:after{content:"｜";}
+#HeaderOtherLink li:last-child{ margin-right:0; padding-right:0;}
+#HeaderOtherLink li:last-child:after{content:"";}
+#HeaderOtherLinkCopy ul{margin:0 0 0px -40px; display:block; vertical-align:middle;}
+#HeaderOtherLinkCopy li{list-style:none; text-align:center; float:inherit; padding-right:0px; color:#999;}
+#HeaderOtherLinkCopy li a{display:block; padding-top:10px; padding-bottom:10px; border-bottom:1px solid #CCC;}
+#HeaderOtherLinkCopy li a:hover{text-decoration:none; background:#EFEFEF; color:#000;}
+#HeaderOtherLinkCopy li:last-child a:hover{border-radius:0 0 10px 10px;}
+#HeaderOtherLinkCopy li:last-child a{border-bottom:0;}
+#HeaderOtherLinkCopy li:after{content:"";}
+#HeaderOtherLinkCopy li:last-child{ margin-right:0; padding-right:0; border-bottom:0;}
+#HeaderOtherLinkCopy li:last-child:after{content:"";}
+.HeaderOtherLinkOpen{display:none;}
+
+.nowrap{white-space:nowrap;}
+/* 伸縮表單:RWD不改變形式 */
+.OchiFixTable{display:table;}
+.OchiFixTable .OchiRow{border-bottom:1px dotted #bababa;}
+.OchiFixTable .OchiCell{display:table-cell;  padding:3px; vertical-align:middle;}
+.OchiFixTable .OchiTitle{text-align:right;padding-right:10px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='20' %3E%3Ccircle cx='5' cy='6' r='1' fill='rgb(155, 155, 155)' /%3E%3Ccircle cx='5' cy='14' r='1' fill='rgb(155, 155, 155)' /%3E%3C/svg%3E") no-repeat right;}
+.OchiFixTable .OchiHalf{width:49%; display:inline-block; vertical-align:middle;}
+.OchiFixTable .OchiThird{width:32.5%; display:inline-block; vertical-align:middle;}
+.OchiFixTable .OchiTableInner{display:table;}
+.OchiFixTable .OchiCellInner{display:table-cell; vertical-align:middle;}
+/* 伸縮表單:RWD改變形式 */
+.OchiTrasTable{display:table;}
+.OchiTrasTable .OchiRow{border-bottom:1px dotted #bababa;}
+.OchiTrasTable .OchiCell{display:table-cell; padding:3px; vertical-align:middle;}
+.OchiTrasTable .OchiTitle{text-align:right;padding-right:10px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='20' %3E%3Ccircle cx='5' cy='6' r='1' fill='rgb(155, 155, 155)' /%3E%3Ccircle cx='5' cy='14' r='1' fill='rgb(155, 155, 155)' /%3E%3C/svg%3E") no-repeat right;}
+.OchiTrasTable .OchiHalf{width:49%; display:inline-block; vertical-align:middle;}
+.OchiTrasTable .OchiThird{width:32.5%; display:inline-block; vertical-align:middle;}
+.OchiTrasTable .OchiTableInner{display:table;}
+.OchiTrasTable .OchiCellInner{display:table-cell; vertical-align:middle;}
+/* 標題垂直置上 */
+.OchiFixTable .OchiTitleUp{background-position:right 4px;vertical-align:top;}
+.OchiTrasTable .OchiTitleUp{background-position:right 4px;vertical-align:top;}
+@media (max-width: 767px) {
+/* RWD處理:外部連結 */	
+.HeaderOtherLinkWrapper{display:none;}
+.HeaderOtherLinkOpen{display:inline;}
+
+/* 伸縮表單:RWD不改變形式 */
+.OchiFixTable{padding:0 5px;}
+.OchiFixTable .OchiCell{display:table-cell;  padding:10px 3px; vertical-align:middle;}
+.OchiFixTable .OchiTitle{text-align:right;padding-right:10px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='20' %3E%3Ccircle cx='5' cy='6' r='1' fill='rgb(155, 155, 155)' /%3E%3Ccircle cx='5' cy='14' r='1' fill='rgb(155, 155, 155)' /%3E%3C/svg%3E") no-repeat right;}
+/* 伸縮表單:RWD改變形式 */
+.OchiTrasTable{display:block;padding:0 5px;}
+.OchiTrasTable .OchiRow{border-bottom:0;}
+.OchiTrasTable .OchiCell{display:block; border-bottom:0px; padding:0px;}
+.OchiTrasTable .OchiTitle{text-align:left;background:none; padding:10px 0 3px 0;}
+.OchiTrasTable .OchiHalf{width:100%; display:block;}
+.OchiTrasTable .OchiThird{width:100%; display:block}
+
+.OchiFixTable .inputex, .OchiTrasTable .inputex{padding:6px 4px;}
+.OchiFixTable a.genbtnS, .OchiTrasTable a.genbtnS{padding:6px 15px;}
+.OchiFixTable input.genbtnS, .OchiTrasTable input.genbtnS{padding:4px 15px;}
+.OchiFixTable button.genbtnS, .OchiTrasTable button.genbtnS{padding:4px 15px;}
+/* 惟讀頁有框線 */
+.OTTreadonly .OchiCell{border-bottom:1px dotted #bababa; padding:5px;}
+}
+
+/* 系統表單標題寬度設定,TitleLength + 標題字數 */
+.TitleLength03 .TitleSetWidth{min-width:5em;}
+.TitleLength04 .TitleSetWidth{min-width:6em;}
+.TitleLength05 .TitleSetWidth{min-width:7em;}
+.TitleLength06 .TitleSetWidth{min-width:8em;}
+.TitleLength07 .TitleSetWidth{min-width:9em;}
+.TitleLength08 .TitleSetWidth{min-width:10em;}
+.TitleLength09 .TitleSetWidth{min-width:11em;}
+.TitleLength10 .TitleSetWidth{min-width:12em;}

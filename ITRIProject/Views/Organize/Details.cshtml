@@ -1,0 +1,192 @@
+﻿@using System.Globalization;
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model X.PagedList.IPagedList<Organize>
+
+@{
+    ViewData["Title"] = "Details";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+@{
+    CultureInfo culture = new CultureInfo("zh-TW");
+    CultureInfo.CurrentCulture = culture;
+    CultureInfo.CurrentUICulture = culture;
+
+}
+<style nonce="@nonce">
+    .table-container {
+        margin-left: 2%;
+        margin-right: 2%;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+
+    tbody tr:nth-child(even) {
+        background-color: #f2f2f2; /* 偶數行灰色背景 */
+    }
+
+    tbody tr:nth-child(odd) {
+        background-color: #fff; /* 奇數行白色背景 */
+    }
+
+    .text-right {
+        text-align: right;
+    }
+</style>
+<script nonce="@nonce">
+
+</script>
+<div class="container-fluid">
+    <div class="title-box">
+        @await Html.PartialAsync("Title/Title")
+
+    </div>
+    <div class="card backgroundcolor">
+        <h4>盤查表</h4>
+        <form>
+            <input type="text" name="productname" placeholder="請填入盤查表名稱" value="@Context.Request.Query["productname"]" />
+            <input name="starttime" type="date" value="@Context.Request.Query["starttime"]" />~
+            <input name="endtime" type="date" value="@Context.Request.Query["endtime"]" />
+
+            <button type="submit" class="btn btn-primary">查詢</button>
+        </form>
+        <div class="text-right">
+            <a class="genbtnS newdata-btn">新增盤查表</a>
+        </div>
+        <div class="table-container">
+
+            <table class="table" border="1">
+                <thead>
+                    <tr>
+                        <th>
+                            盤查表名稱
+                        </th>
+                        <th>
+                            盤查區間
+                        </th>
+                        <th>
+                            聯絡窗口
+                        </th>
+                        <th>
+                            更新日期
+                        </th>
+                        <th>
+                            狀態
+                        </th>
+                        <th>
+                            操作
+                        </th>
+                        <th>
+                            群組
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        @if (Model != null)
+                        {
+                            @foreach (var item in Model)
+                            {
+                            <tr>
+                                <td>
+                                        @Html.DisplayFor(modelItem => item.Inventory)
+                                </td>
+                                <td>
+                                        @Html.DisplayFor(modelItem => item.StartTime,"LongDateTime")~
+                                        @Html.DisplayFor(modelItem => item.EndTime,"LongDateTime")
+
+                                </td>
+                                <td>
+                                        @Html.DisplayFor(modelItem => item.ContactName)
+                                </td>
+                                <td>
+                                        @Html.DisplayFor(modelItem => item.UpdateTime,"LongDateTime")
+                                </td>
+                                <td>
+                                        @Html.DisplayFor(modelItem => item.Status)
+                                </td>
+
+                                <td>
+                                    <button class="genbtnS"><a class="text-dark" asp-action="BasicData" asp-route-id="@item.BasicId">編輯</a></button>
+                                    <button class="genbtnS-danger"><a class="text-dark delete-button" href="javascript:void(0);" id="@item.BasicId" data-basicid="@item.BasicId" data-inventory="@item.Inventory">刪除</a></button>
+                                </td>
+                                <td>
+                                    <button class="genbtnS"><a class="text-dark ViewBasicdata-btn" href="javascript:void(0);" id="@item.BasicId" data-basicid="@item.BasicId">查看</a></button>
+                                </td>
+                            </tr>
+
+                            }
+                        }
+                        else
+                        {
+                        <tr>
+                            <td>無專案資料</td>
+                        </tr>
+                        }
+
+
+                </tbody>
+            </table>
+        </div>
+        <div class="d-flex justify-content-center mt-2">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Details", new { page = 1 })" aria-label="First">第一頁</a>
+                    </li>
+
+                    @if (Model.HasPreviousPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Details", new { page = Model.PageNumber - 1 })" aria-label="Previous">上一頁</a>
+                        </li>
+                    }
+
+                    @for (int i = 1; i <= Model.PageCount; i++)
+                    {
+                        <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Details", new { page = i })">@i</a>
+                        </li>
+                    }
+
+                    @if (Model.HasNextPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="@Url.Action("Details", new { page = Model.PageNumber + 1 })" aria-label="Next">下一頁</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.PageNumber == Model.PageCount ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Details", new { page = Model.PageCount })" aria-label="Last">最後一頁</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        <script>
+
+        </script>
+    }
+    <script nonce="@nonce" src="~/js/init-magnificPopup.js"></script>
+    <script nonce="@nonce">
+        $(document).on('click', '.newdata-btn', function () {
+            var url = '@Url.Action("BasicData", "Organize")';
+            location.href = url;
+        });
+
+
+    </script>
+
+
+}

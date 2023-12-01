@@ -1,0 +1,167 @@
+﻿@model ITRIProject.Models.Member
+
+@{
+    ViewData["Title"] = "會員基本資料";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+@section Scripts {
+    <script nonce="@nonce">
+        $(function () {
+            $("#Member").validate({
+                rules: {
+                    Account: "required",
+
+                    Email: {
+                        required: true,
+                        email: true // 使用 email 规则验证电子邮件格式
+                    },
+                    Name: "required",
+                    UserType: "required",
+
+                },
+                messages: {
+                    Account: "請輸入帳號",
+
+                    Email: {
+                        required: "請輸入Email",
+                        email: "Email格式不正確" // 自定义错误消息
+                    },
+                    Name: "請輸入姓名",
+                    UserType: "請選擇用戶類型"
+                },
+                errorElement: 'div',
+                errorPlacement: function (error, element) {
+                    var placement = $(element).data('error');
+                    if (placement) {
+                        $(placement).append(error)
+                    } else {
+                        error.insertAfter(element);
+                    }
+                }
+            });
+        });
+        $(document).ready(function () {
+            $("#Member").submit(function (event) {
+
+                var isValid = $("#Member").validate().form();
+                if (!isValid) {
+                    return false;
+                }
+                event.preventDefault(); // 防止表單的預設提交行為
+
+                var formData = $(this).serialize(); // 序列化表單數據
+
+                $.ajax({
+                    url: "/Member/Member",
+                    type: "POST",
+                    data: formData, // 將表單數據和驗證碼傳遞到後端
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.success) {
+                            alert("修改成功")
+                            // 登入成功，執行相應的操作
+                            location.reload();
+                        } else {
+                            // 登入失敗，處理錯誤回應
+                            alert(response.error);
+                        }
+                    },
+                });
+                return false; // 阻止表單的預設提交行為
+
+            });
+        });
+
+
+    </script>
+    <style>
+        span {
+            color: red;
+        }
+    </style>
+}
+<div class="container">
+    <div class='card backgroundcolor member_box'>
+        <h1>基本資料</h1>
+        <hr />
+        <form asp-action="Member" id="Member">
+            <div class="row">
+                <div class="col-md-4">
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group">
+                        <span style='color: red;'>*</span><label class="control-label">帳號</label>
+                        <input asp-for="Account" class="form-control" oninput="validateInput(this)"
+                               value="@Model.Account" disabled />
+                        <span id="Account" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <span style='color: red;'>*</span><label class="control-label" value="@Model.Email">電子信箱</label>
+                        <input asp-for="Email" id="Email" class="form-control" value="@Model.Email" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <span style='color: red;'>*</span><label class="control-label" value="@Model.Name">姓名</label>
+                        <input asp-for="Name" id="Name" class="form-control" value="@Model.Name" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label" value="@Model.Position">職稱</label>
+                        <input asp-for="Position" id="Position" class="form-control" value="@Model.Position" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label" value="@Model.Addr">聯絡地址</label>
+                        <input asp-for="Addr" id="Addr" class="form-control" value="@Model.Addr" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label" value="@Model.Tel">連絡電話</label>
+                        <input asp-for="Tel" id="Tel" class="form-control" value="@Model.Tel" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label" value="@Model.CompanyName">公司名稱</label>
+                        <input asp-for="CompanyName" id="CompanyName" class="form-control" value="@Model.CompanyName" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label" value="@Model.Department">部門</label>
+                        <input asp-for="Department" id="Department" class="form-control" value="@Model.Department" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label" value="@Model.OfficeLocation">科別</label>
+                        <input asp-for="OfficeLocation" id="OfficeLocation" class="form-control"
+                               value="@Model.OfficeLocation" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label" value="@Model.UserType">用戶類型 </label>
+                        <div>
+                            <label class="form-check-label">
+                                <input asp-for="UserType" id="UserType" type="radio" value="其他"
+                                       name="UserType" checked />其他
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group" style="text-align:center">
+                        <input type="submit" value="修改" class="btn btn-primary" style="width:200px" />
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

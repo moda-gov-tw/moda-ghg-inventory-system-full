@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+    @{
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+    }
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - 詳細資料</title>
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/magnific-popup.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/magnific-popup/magnific-popup.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid-theme.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid-theme.min.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiColor.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiLayout.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiRWD.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/style.css" />
+
+    <style nonce="@nonce">
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        .site-content {
+            min-height: 100vh; /* 使用視窗高度作為最小高度 */
+            margin-bottom: -50px; /* 扣除 footer 的高度 */
+            width: 100%;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <div class="site-content">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    @*    <footer class="border-top footer text-muted">
+    <div class="footer-content">
+    </div>
+    </footer>*@
+
+    <script nonce="@nonce" src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script nonce="@nonce" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script nonce="@nonce" src="~/js/site.js" asp-append-version="true"></script>
+
+    <script nonce="@nonce" type="text/javascript" src="~/lib/magnific-popup/jquery.magnific-popup.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/magnific-popup/init-magnificPopup.js"></script>
+
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid.min.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid-fr.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
