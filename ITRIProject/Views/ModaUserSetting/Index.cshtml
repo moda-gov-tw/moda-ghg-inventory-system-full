@@ -1,0 +1,148 @@
+﻿@using X.PagedList.Mvc.Core;
+
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model X.PagedList.IPagedList<ITRIProject.Models.View.ModaUserSetting>
+@{
+    ViewData["Title"] = "ModaUserSetting";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+
+@section Scripts {
+
+    <script nonce="@nonce">
+        $(".DeleteModaUser-btn").on("click", function () {
+            var UserId = $(this).data('userid');
+            var Name = $(this).data('name');
+            var confirmed = window.confirm("確定要刪除[" + Name + "]該帳號嗎？");
+            if (!confirmed) {
+                return;
+            }
+            $.ajax({
+                url: "/ModaUserSetting/Delete/" + UserId,
+                type: "POST",
+                processData: false,
+                contentType: false,
+                //data: formData, // 將表單數據和驗證碼傳遞到後端
+                dataType: "json",
+                success: function (response) {
+                    if (response.success) {
+                        window.location.href = "/ModaUserSetting/Index";
+                    } else {
+                        // 登入失敗，處理錯誤回應
+                        alert(response.error);
+                    }
+                },
+            });
+        });
+    </script>
+}
+
+<div class="container">
+
+    <div class="">
+
+        <h3>
+            數位部使用者設定
+        </h3>
+        <form class="d-flex mb-2" method="post" action="/ModaUserSetting/Index">
+            <div class="width30">
+                <select id="selectedUserId" name="selectedUserId" class="form-control">
+                    <option value="0">請選擇新增使用者</option>
+                    @{
+                        var uniqueEmails = new HashSet<string>();
+                        foreach (var modaUser in ViewBag.ModaUser)
+                        {
+                            uniqueEmails.Add(modaUser.Email);
+                        }
+                        foreach (var modaUser in ViewBag.ModaUserSetting)
+                        {
+                            if (!uniqueEmails.Contains(modaUser.Email))
+                            {
+                                <option value="@modaUser.Id">@modaUser.CompanyName @modaUser.Department @modaUser.OfficeLocation @modaUser.Name</option>
+                            }
+                        }
+                    }
+                </select>                
+            </div>  
+            <button type="submit" class="btn btn-primary mx-2">加入</button>
+        </form>
+        <div class="table-responsive" id="tablecontainer">
+            <table class="responsive-table width100">
+                <thead class="text-center">
+                    <tr>
+                        <th>姓名</th>
+                        <th>電子信箱</th>
+                        <th>機關(公司)名稱    </th>
+                        <th>部門</th>
+                        <th>科別</th>
+                        <th>職位</th>
+                        <th>操作</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.ModaUser == null)
+                    {
+                        <tr>
+                            <td colspan="12">暫無資料！</td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>@item.Email</td>
+                            <td>@item.CompanyName</td>
+                            <td>@item.Department</td>
+                            <td>@item.OfficeLocation</td>
+                            <td>@item.Position</td>
+                            <td>
+                                <input class="genbtnS-danger text-dark delete_member DeleteModaUser-btn" type="button" id="@item.Id" data-userid="@item.Id" data-name="@item.Name" value="刪除">
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="d-flex justify-content-center mt-2">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = 1 })" aria-label="First">第一頁</a>
+                        </li>
+
+                        @if (Model.HasPreviousPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber - 1 })" aria-label="Previous">上一頁</a>
+                            </li>
+                        }
+
+                        @for (int i = 1; i <= Model.PageCount; i++)
+                        {
+                            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                            </li>
+                        }
+
+                        @if (Model.HasNextPage)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="@Url.Action("Index", new { page = Model.PageNumber + 1 })" aria-label="Next">下一頁</a>
+                            </li>
+                        }
+
+                        <li class="page-item @(Model.PageNumber == Model.PageCount ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = Model.PageCount })" aria-label="Last">最後一頁</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+
+
+        </div>
+    </div>
+</div>

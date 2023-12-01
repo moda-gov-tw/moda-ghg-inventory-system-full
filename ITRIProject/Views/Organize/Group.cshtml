@@ -1,0 +1,95 @@
+﻿@using System.Globalization;
+@model List<ITRIProject.Models.Organize>
+
+@{
+    ViewData["Title"] = "Group";
+    Layout = null;
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+@{
+    CultureInfo culture = new CultureInfo("zh-TW");
+    CultureInfo.CurrentCulture = culture;
+    CultureInfo.CurrentUICulture = culture;
+
+}
+<link nonce="@nonce" rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+<link nonce="@nonce" rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+<link nonce="@nonce" rel="stylesheet" href="~/css/style.css" />
+<style nonce="@nonce">
+    .table-container {
+        margin-left: 2%;
+        margin-right: 2%;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+
+    tbody tr:nth-child(even) {
+        background-color: #f2f2f2; /* 偶數行灰色背景 */
+    }
+
+    tbody tr:nth-child(odd) {
+        background-color: #fff; /* 奇數行白色背景 */
+    }
+</style>
+<div class="container-fluid">
+    <div class="card backgroundcolor">
+        <h4>群組</h4>
+        @*        <form>
+        <input type="text" name="productname" placeholder="請填入盤查表名稱" value="@Context.Request.Query["productname"]" />
+        <input name="starttime" type="date" value="@Context.Request.Query["starttime"]" />~
+        <input name="endtime" type="date" value="@Context.Request.Query["endtime"]" />
+
+        <button type="submit" class="btn btn-primary">查詢</button>
+        </form>*@
+        <div class="table-container">
+            <table class="table" border="1">
+                <thead>
+                    <tr>
+                        <th>
+                            填表人
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        @if (Model != null)
+                        {
+                            @foreach (var item in Model)
+                            {
+                            <tr>
+                                <td>
+                                        @foreach (var member in ViewBag.Member)
+                                        {
+                                            if (item.Account == member.MemberId.ToString())
+                                            {
+                                                {
+                                                    @member.Name
+                                                }
+                                            }
+                                        }
+                                </td>
+                            </tr>
+
+                            }
+                        }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script nonce="@nonce" src="~/js/init-magnificPopup.js"></script>
+
+
+
+}

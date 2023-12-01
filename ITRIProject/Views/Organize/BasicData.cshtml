@@ -1,0 +1,1095 @@
+﻿@using Newtonsoft.Json;
+@model ITRIProject.Models.Basicdata
+@{
+    ViewData["Title"] = "BasicData";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+@section Scripts{
+    <script nonce="@nonce">
+        var url = new URL(window.location.href);
+        var id = url.pathname.split('/').pop(); // 從 URL 的路徑部分中獲取最後一個值作為 id
+
+        // 在控制台上輸出id，以驗證是否成功抓取到id
+        $(document).ready(function () {
+            $("#BasicData").submit(function (event) {
+                if (!CheckFactoryName() || !Checkfactoryoutsidename() || !CheckfactoryInDeductionname() || !CheckPerson()) {
+                    return false;
+                }
+                var inputs = document.querySelectorAll('input[name^="name"]'); // 選取所有名稱以 "name" 開頭的 <input> 元素
+                for (var i = 1; i <= inputs.length; i++) {
+                    var fieldName = "name" + i;
+                    var rule = {};
+                    rule[fieldName] = "required";
+                    $("#BasicData").validate().settings.rules = $.extend($("#BasicData").validate().settings.rules, rule);
+
+                    var message = "場域" + numberToChinese(i) + "名稱未輸入"; // 替换为你的自定义提示消息
+                    $("#BasicData").validate().settings.messages[fieldName] = message;
+
+                    var address = "address" + i;
+                    rule[address] = "required";
+                    $("#BasicData").validate().settings.rules = $.extend($("#BasicData").validate().settings.rules, rule);
+
+                    var addressmessage = "場域" + numberToChinese(i) + "地址未輸入"; // 替换为你的自定义提示消息
+                    $("#BasicData").validate().settings.messages[address] = addressmessage;
+                }
+
+
+
+                var isValid = $("#BasicData").validate().form();
+                if (!isValid) {
+                    return false;
+                }
+
+                event.preventDefault(); // 防止表單的預設提交行為
+                var formData = new FormData($(this)[0]); // 將整個表單數據轉換為 FormData
+
+
+                $.ajax({
+                    url: "/Organize/BasicData/" + id,
+                    type: "POST",
+                    data: formData, // 將表單數據和驗證碼傳遞到後端
+                    processData: false,
+                    contentType: false,
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.nologin) {
+                            window.location.href = "/Member/Login";
+                        }
+                        else if (response.success) {
+                            // 登入成功，執行相應的操作
+                            var id = response.id; // 獲取回傳的 id 值
+                            console.log(id);
+                            window.location.href = "/Organize/EnergyUse/" + id;
+                        } else {
+                            // 登入失敗，處理錯誤回應
+                            alert(response.error);
+                        }
+                    },
+
+                });
+
+
+            });
+        });
+
+        $(function () {
+            $("#BasicData").validate({
+                rules: {
+                    OrganName: "required",
+                    OrganNumber: "required",
+                    ContactPerson: "required",
+                    ContactPhone: "required",
+                    ContactEmail: "required",
+                    StartTime: "required",
+                    EndTime: "required",
+
+                },
+                messages: {
+                    OrganName: "請輸入機關(公司)名稱",
+                    OrganNumber: "請輸入機關代號(統一編號)",
+                    ContactPerson: "請輸入聯絡人名稱",
+                    ContactPhone: "請輸入聯絡人電話",
+                    ContactEmail: "請輸入聯絡人信箱",
+                    StartTime: "請輸入開始時間",
+                    EndTime: "請輸入結束時間",
+
+                },
+                errorElement: 'div',
+                errorPlacement: function (error, element) {
+                    var placement = $(element).data('error');
+                    if (placement) {
+                        $(placement).append(error)
+                    } else {
+                        error.insertAfter(element);
+                    }
+                }
+            });
+        });
+        $(".ConpanyName-btn").on("click", function () {
+            ConpanyName();
+        });
+
+        $(".add_adddress").on("click", function () {
+            addAddress();
+        });
+
+        $(".add_factoryIn").on("click", function () {
+            factoryInDeductionaddAddress();
+        });
+
+        $(".add_factoryOut").on("click", function () {
+            factoryoutsideaddAddress();
+        });
+
+        $(".add_person").on("click", function () {
+            AddPerson();
+        });
+    </script>
+}
+<script nonce="@nonce">
+    window.onload = function () {
+        var factory = @Html.Raw(ViewBag.factory);
+        for (var i = 0; i < factory.length; i++) {
+            if (i == 0) {
+                var factoryID1 = document.getElementById("factoryID1");
+                var name1 = document.getElementById("name1");
+                var address1 = document.getElementById("address1");
+
+                factoryID1.value = factory[0].Id;
+                name1.value = factory[0].Name;
+                address1.value = factory[0].Address;
+                continue;
+
+            }
+            let addressesDiv = document.getElementById("addresses");
+            let newAddressDiv = document.createElement("div");
+            let newAddressLabel = document.createElement("label");
+            newAddressLabel.textContent = "場域" + numberToChinese(addressCounter + 1); // 遞增的廠址名稱
+            //輸入的名稱及廠址
+            let newNameInput = document.createElement("input");
+            newNameInput.setAttribute("name", "name" + (addressCounter + 1));
+            newNameInput.setAttribute("placeholder", "名稱");
+            newNameInput.value = factory[i].Name;
+            let space = document.createTextNode(" ");
+            let space1 = document.createTextNode(" ");
+            let space2 = document.createTextNode(" ");
+
+            let newAddressInput = document.createElement("input");
+            newAddressInput.setAttribute("name", "address" + (addressCounter + 1));
+            newAddressInput.setAttribute("placeholder", "地址");
+            newAddressInput.value = factory[i].Address;
+
+            let newfactoryIDInput = document.createElement("input");
+            newfactoryIDInput.setAttribute("name", "factoryID" + (addressCounter + 1));
+            newfactoryIDInput.value = factory[i].Id;
+            newfactoryIDInput.style.display = "none";
+
+
+            newAddressInput.style = "width:50%";
+
+            newNameInput.oninput = function (event) {
+                console.log(event.target.name);
+            };
+            newAddressInput.oninput = function (event) {
+                console.log(event.target.name);
+            };
+
+            let newAddressValidation = document.createElement("span");
+            newAddressValidation.className = "text-danger";
+            let deleteButton = document.createElement("button");
+            deleteButton.className = "btn btn-danger";
+            deleteButton.textContent = "刪除";
+            deleteButton.onclick = function () {
+                newAddressDiv.remove();
+                addressCounter--;
+                let labels = document.querySelectorAll("#addresses label");
+                let factoryIDInputs = document.querySelectorAll("#addresses input[name^='factoryID']");
+                let nameInputs = document.querySelectorAll("#addresses input[name^='name']");
+                let addressInputs = document.querySelectorAll("#addresses input[name^='address']");
+                console.log(nameInputs.length)
+                console.log(labels.length)
+
+                for (let i = 0; i < labels.length; i++) {
+                    labels[i].textContent = "場域" + numberToChinese(i + 1);
+                    factoryIDInputs[i].name = "factoryID" + (i + 1);
+                    nameInputs[i].name = "name" + (i + 1);
+                    addressInputs[i].name = "address" + (i + 1);
+                }
+            };
+            newAddressDiv.appendChild(newfactoryIDInput);
+
+            newAddressDiv.appendChild(newAddressLabel);
+            newAddressDiv.appendChild(space);
+
+            newAddressDiv.appendChild(newNameInput);
+            newAddressDiv.appendChild(space1);
+
+            newAddressDiv.appendChild(newAddressInput);
+
+            newAddressDiv.appendChild(newAddressValidation);
+            newAddressDiv.appendChild(space2);
+
+            newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            addressesDiv.appendChild(newAddressDiv);
+            addressCounter++;
+        }
+
+        var CheckFieldoutside = @Html.Raw(ViewBag.CheckFieldoutside);
+        for (var i = 0; i < CheckFieldoutside.length; i++) {
+            if (i == 0) {
+                var factoryID1 = document.getElementById("factoryoutsideID1");
+                var name1 = document.getElementById("factoryoutsidename1");
+                var address1 = document.getElementById("factoryoutsideaddress1");
+
+                factoryID1.value = CheckFieldoutside[0].Id;
+                name1.value = CheckFieldoutside[0].Name;
+                address1.value = CheckFieldoutside[0].Address;
+                continue;
+
+            }
+            let addressesDiv = document.getElementById("factoryoutsideaddresses");
+            let newAddressDiv = document.createElement("div");
+            let newAddressLabel = document.createElement("label");
+            newAddressLabel.textContent = "區域" + numberToChinese(factoryoutsideaddressCounter + 1); // 遞增的廠址名稱
+            //輸入的名稱及廠址
+            let newNameInput = document.createElement("input");
+            newNameInput.setAttribute("name", "factoryoutsidename" + (factoryoutsideaddressCounter + 1));
+            newNameInput.setAttribute("placeholder", "名稱");
+            newNameInput.value = CheckFieldoutside[i].Name;
+            let space = document.createTextNode(" ");
+            let space1 = document.createTextNode(" ");
+            let space2 = document.createTextNode(" ");
+
+            let newAddressInput = document.createElement("input");
+            newAddressInput.setAttribute("name", "factoryoutsideaddress" + (factoryoutsideaddressCounter + 1));
+            newAddressInput.setAttribute("placeholder", "地址");
+            newAddressInput.value = CheckFieldoutside[i].Address;
+
+            let newfactoryIDInput = document.createElement("input");
+            newfactoryIDInput.setAttribute("name", "factoryoutsideID" + (factoryoutsideaddressCounter + 1));
+            newfactoryIDInput.value = CheckFieldoutside[i].Id;
+            newfactoryIDInput.style.display = "none";
+
+
+            newAddressInput.style = "width:50%";
+
+            newNameInput.oninput = function (event) {
+                console.log(event.target.name);
+            };
+            newAddressInput.oninput = function (event) {
+                console.log(event.target.name);
+            };
+
+            let newAddressValidation = document.createElement("span");
+            newAddressValidation.className = "text-danger";
+            let deleteButton = document.createElement("button");
+            deleteButton.className = "btn btn-danger";
+            deleteButton.textContent = "刪除";
+            deleteButton.onclick = function () {
+                newAddressDiv.remove();
+                factoryoutsideaddressCounter--;
+                let labels = document.querySelectorAll("#factoryoutsideaddresses label");
+                let factoryIDInputs = document.querySelectorAll("#factoryoutsideaddresses input[name^='factoryoutsideID']");
+                let nameInputs = document.querySelectorAll("#factoryoutsideaddresses input[name^='factoryoutsidename']");
+                let addressInputs = document.querySelectorAll("#factoryoutsideaddresses input[name^='factoryoutsideaddress']");
+                console.log(nameInputs.length)
+                console.log(labels.length)
+
+                for (let i = 0; i < labels.length; i++) {
+                    labels[i].textContent = "區域" + numberToChinese(i + 1);
+                    factoryIDInputs[i].name = "factoryoutsideID" + (i + 1);
+                    nameInputs[i].name = "factoryoutsidename" + (i + 1);
+                    addressInputs[i].name = "factoryoutsideaddress" + (i + 1);
+                }
+            };
+            newAddressDiv.appendChild(newfactoryIDInput);
+
+            newAddressDiv.appendChild(newAddressLabel);
+            newAddressDiv.appendChild(space);
+
+            newAddressDiv.appendChild(newNameInput);
+            newAddressDiv.appendChild(space1);
+
+            newAddressDiv.appendChild(newAddressInput);
+
+            newAddressDiv.appendChild(newAddressValidation);
+            newAddressDiv.appendChild(space2);
+
+            newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            addressesDiv.appendChild(newAddressDiv);
+            factoryoutsideaddressCounter++;
+        }
+
+        var InDeduction = @Html.Raw(ViewBag.InDeduction);
+        for (var i = 0; i < InDeduction.length; i++) {
+            if (i == 0) {
+                var factoryID1 = document.getElementById("factoryInDeductionID1");
+                var name1 = document.getElementById("factoryInDeductionname1");
+                var address1 = document.getElementById("factoryInDeductionaddress1");
+
+                factoryID1.value = InDeduction[0].Id;
+                name1.value = InDeduction[0].Name;
+                address1.value = InDeduction[0].Address;
+                continue;
+
+            }
+            let addressesDiv = document.getElementById("factoryInDeductionaddresses");
+            let newAddressDiv = document.createElement("div");
+            let newAddressLabel = document.createElement("label");
+            newAddressLabel.textContent = "區域" + numberToChinese(factoryInDeductionaddressCounter + 1); // 遞增的廠址名稱
+            //輸入的名稱及廠址
+            let newNameInput = document.createElement("input");
+            newNameInput.setAttribute("name", "factoryInDeductionname" + (factoryInDeductionaddressCounter + 1));
+            newNameInput.setAttribute("placeholder", "名稱");
+            newNameInput.value = InDeduction[i].Name;
+            let space = document.createTextNode(" ");
+            let space1 = document.createTextNode(" ");
+            let space2 = document.createTextNode(" ");
+
+            let newAddressInput = document.createElement("input");
+            newAddressInput.setAttribute("name", "factoryInDeductionaddress" + (factoryInDeductionaddressCounter + 1));
+            newAddressInput.setAttribute("placeholder", "地址");
+            newAddressInput.value = InDeduction[i].Address;
+
+            let newfactoryIDInput = document.createElement("input");
+            newfactoryIDInput.setAttribute("name", "factoryInDeductionID" + (factoryInDeductionaddressCounter + 1));
+            newfactoryIDInput.value = InDeduction[i].Id;
+            newfactoryIDInput.style.display = "none";
+
+
+            newAddressInput.style = "width:50%";
+
+            newNameInput.oninput = function (event) {
+                console.log(event.target.name);
+            };
+            newAddressInput.oninput = function (event) {
+                console.log(event.target.name);
+            };
+
+            let newAddressValidation = document.createElement("span");
+            newAddressValidation.className = "text-danger";
+            let deleteButton = document.createElement("button");
+            deleteButton.className = "btn btn-danger";
+            deleteButton.textContent = "刪除";
+            deleteButton.onclick = function () {
+                newAddressDiv.remove();
+                factoryInDeductionaddressCounter--;
+                let labels = document.querySelectorAll("#factoryInDeductionaddresses label");
+                let factoryIDInputs = document.querySelectorAll("#factoryInDeductionaddresses input[name^='factoryInDeductionID']");
+                let nameInputs = document.querySelectorAll("#factoryInDeductionaddresses input[name^='factoryInDeductionname']");
+                let addressInputs = document.querySelectorAll("#factoryInDeductionaddresses input[name^='factoryInDeductionaddress']");
+                console.log(nameInputs.length)
+                console.log(labels.length)
+
+                for (let i = 0; i < labels.length; i++) {
+                    labels[i].textContent = "區域" + numberToChinese(i + 1);
+                    factoryIDInputs[i].name = "factoryInDeductionID" + (i + 1);
+                    nameInputs[i].name = "factoryInDeductionname" + (i + 1);
+                    addressInputs[i].name = "factoryInDeductionaddress" + (i + 1);
+                }
+            };
+            newAddressDiv.appendChild(newfactoryIDInput);
+
+            newAddressDiv.appendChild(newAddressLabel);
+            newAddressDiv.appendChild(space);
+
+            newAddressDiv.appendChild(newNameInput);
+            newAddressDiv.appendChild(space1);
+
+            newAddressDiv.appendChild(newAddressInput);
+
+            newAddressDiv.appendChild(newAddressValidation);
+            newAddressDiv.appendChild(space2);
+
+            newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            addressesDiv.appendChild(newAddressDiv);
+            factoryInDeductionaddressCounter++;
+        }
+
+        var Group = @Html.Raw(ViewBag.Group);
+        console.log("aa")
+        console.log(Group)
+
+        for (var i = 0; i < Group.length; i++) {
+            let addressesDiv = document.getElementById("Person");
+            let newAddressDiv = document.createElement("div");
+            let newAddressLabel = document.createElement("label");
+            newAddressLabel.textContent = "人員" + numberToChinese(PersonCounter + 1); // 遞增的廠址名稱
+            //輸入的名稱及廠址
+            let newNameInput = document.createElement("select");
+            newNameInput.setAttribute("name", "PersonName" + (PersonCounter + 1));
+            newNameInput.setAttribute("placeholder", "名稱");
+
+            let members = @Html.Raw(ViewBag.Member); // 从 ViewBag 中获取 JSON 数据
+            console.log(members)
+            // 循环遍历数据并创建选项
+            for (let j = 0; j < members.length; j++) {
+                let option = document.createElement("option");
+                option.value = members[j].MemberId;
+                option.text = members[j].Name;
+                newNameInput.appendChild(option);
+
+                // 检查当前选项的值是否在 Group 数据中
+                if (Group[i].MemberId === members[j].MemberId) {
+                    option.selected = true; // 如果匹配，设置为选中状态
+                }
+
+                newNameInput.appendChild(option);
+            }
+
+            let space = document.createTextNode(" ");
+            let space1 = document.createTextNode(" ");
+            let space2 = document.createTextNode(" ");
+
+
+            let newfactoryIDInput = document.createElement("input");
+            newfactoryIDInput.setAttribute("name", "PersonID" + (PersonCounter + 1));
+            newfactoryIDInput.value = Group[i].Id;
+            newfactoryIDInput.style.display = "none";
+
+
+
+            newNameInput.oninput = function (event) {
+                console.log(event.target.name);
+            };
+
+
+            let newAddressValidation = document.createElement("span");
+            newAddressValidation.className = "text-danger";
+            let deleteButton = document.createElement("button");
+            deleteButton.className = "btn btn-danger";
+            deleteButton.textContent = "刪除";
+            deleteButton.onclick = function () {
+                newAddressDiv.remove();
+                PersonCounter--;
+                let labels = document.querySelectorAll("#Person label");
+                let factoryIDInputs = document.querySelectorAll("#Person input[name^='PersonID']");
+                let nameInputs = document.querySelectorAll("#Person select[name^='PersonName']");
+                console.log(nameInputs.length)
+                console.log(labels.length)
+
+                for (let i = 0; i < labels.length; i++) {
+                    labels[i].textContent = "人員" + numberToChinese(i + 1);
+                    factoryIDInputs[i].name = "PersonID" + (i + 1);
+                    nameInputs[i].name = "PersonName" + (i + 1);
+                }
+            };
+            newAddressDiv.appendChild(newfactoryIDInput);
+
+            newAddressDiv.appendChild(newAddressLabel);
+            newAddressDiv.appendChild(space);
+
+            newAddressDiv.appendChild(newNameInput);
+            newAddressDiv.appendChild(space1);
+
+            newAddressDiv.appendChild(newAddressValidation);
+            newAddressDiv.appendChild(space2);
+
+            newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            addressesDiv.appendChild(newAddressDiv);
+            PersonCounter++;
+        }
+    };
+
+
+</script>
+
+<script nonce="@nonce">
+    let addressCounter = 1; // 計數器用於自動遞增廠址名稱
+    function addAddress() {
+        let addressesDiv = document.getElementById("addresses");
+        let newAddressDiv = document.createElement("div");
+        let newAddressLabel = document.createElement("label");
+        newAddressLabel.textContent = "場域" + numberToChinese(addressCounter + 1); // 遞增的廠址名稱
+        //輸入的名稱及廠址
+        let newNameInput = document.createElement("input");
+        newNameInput.setAttribute("name", "name" + (addressCounter + 1));
+        newNameInput.setAttribute("placeholder", "名稱");
+
+        let space = document.createTextNode(" ");
+        let space1 = document.createTextNode(" ");
+        let space2 = document.createTextNode(" ");
+
+        let newAddressInput = document.createElement("input");
+        newAddressInput.setAttribute("name", "address" + (addressCounter + 1));
+        newAddressInput.setAttribute("placeholder", "地址");
+
+        let newfactoryIDInput = document.createElement("input");
+        newfactoryIDInput.setAttribute("name", "factoryID" + (addressCounter + 1));
+        newfactoryIDInput.style.display = "none";
+
+        newAddressInput.style = "width:50%";
+
+        newNameInput.oninput = function (event) {
+            console.log(event.target.name);
+        };
+        newAddressInput.oninput = function (event) {
+            console.log(event.target.name);
+        };
+
+        let newAddressValidation = document.createElement("span");
+        newAddressValidation.className = "text-danger";
+        let deleteButton = document.createElement("button");
+        deleteButton.className = "btn btn-danger";
+        deleteButton.textContent = "刪除";
+        deleteButton.onclick = function () {
+            newAddressDiv.remove();
+            addressCounter--;
+            let labels = document.querySelectorAll("#addresses label");
+            let factoryIDInputs = document.querySelectorAll("#addresses input[name^='factoryID']");
+            let nameInputs = document.querySelectorAll("#addresses input[name^='name']");
+            let addressInputs = document.querySelectorAll("#addresses input[name^='address']");
+            console.log(nameInputs.length)
+            console.log(labels.length)
+
+            for (let i = 0; i < labels.length; i++) {
+                labels[i].textContent = "場域" + numberToChinese(i + 1);
+                factoryIDInputs[i].name = "factoryID" + (i + 1);
+                nameInputs[i].name = "name" + (i + 1);
+                addressInputs[i].name = "address" + (i + 1);
+            }
+
+
+
+        };
+        newAddressDiv.appendChild(newfactoryIDInput);
+
+        newAddressDiv.appendChild(newAddressLabel);
+        newAddressDiv.appendChild(space);
+
+        newAddressDiv.appendChild(newNameInput);
+        newAddressDiv.appendChild(space1);
+
+        newAddressDiv.appendChild(newAddressInput);
+
+        newAddressDiv.appendChild(newAddressValidation);
+        newAddressDiv.appendChild(space2);
+
+        newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        addressesDiv.appendChild(newAddressDiv);
+        addressCounter++;
+    }
+
+
+
+    //檢查廠址名稱是否重複
+    function CheckFactoryName() {
+        var names = []; // 存儲欄位值的陣列
+        var inputs = document.querySelectorAll('input[name^="name"]'); // 選取所有名稱以 "name" 開頭的 <input> 元素
+
+        // 迴圈遍歷每個欄位
+        for (var i = 0; i < inputs.length; i++) {
+            var nameValue = inputs[i].value.trim();
+
+            // 檢查值是否為空
+            if (nameValue !== "") {
+                if (names.includes(nameValue)) {
+                    // 有重複值，顯示錯誤訊息並返回 false
+                    alert("盤查場域有重複值");
+                    return false;
+                } else {
+                    names.push(nameValue); // 將值加入陣列中
+                }
+            }
+        }
+
+        // 沒有重複值，返回 true
+        return true;
+    }
+
+</script>
+<script nonce="@nonce">
+    let factoryoutsideaddressCounter = 1; // 計數器用於自動遞增廠址名稱
+    function factoryoutsideaddAddress() {
+        let addressesDiv = document.getElementById("factoryoutsideaddresses");
+        let newAddressDiv = document.createElement("div");
+        let newAddressLabel = document.createElement("label");
+        newAddressLabel.textContent = "區域" + numberToChinese(factoryoutsideaddressCounter + 1); // 遞增的廠址名稱
+        //輸入的名稱及廠址
+        let newNameInput = document.createElement("input");
+        newNameInput.setAttribute("name", "factoryoutsidename" + (factoryoutsideaddressCounter + 1));
+        newNameInput.setAttribute("placeholder", "名稱");
+
+        let space = document.createTextNode(" ");
+        let space1 = document.createTextNode(" ");
+        let space2 = document.createTextNode(" ");
+
+        let newAddressInput = document.createElement("input");
+        newAddressInput.setAttribute("name", "factoryoutsideaddress" + (factoryoutsideaddressCounter + 1));
+        newAddressInput.setAttribute("placeholder", "地址");
+
+        let newfactoryIDInput = document.createElement("input");
+        newfactoryIDInput.setAttribute("name", "factoryoutsideID" + (factoryoutsideaddressCounter + 1));
+        newfactoryIDInput.style.display = "none";
+
+        newAddressInput.style = "width:50%";
+
+        newNameInput.oninput = function (event) {
+            console.log(event.target.name);
+        };
+        newAddressInput.oninput = function (event) {
+            console.log(event.target.name);
+        };
+
+        let newAddressValidation = document.createElement("span");
+        newAddressValidation.className = "text-danger";
+        let deleteButton = document.createElement("button");
+        deleteButton.className = "btn btn-danger";
+        deleteButton.textContent = "刪除";
+        deleteButton.onclick = function () {
+            newAddressDiv.remove();
+            factoryoutsideaddressCounter--;
+            let labels = document.querySelectorAll("#factoryoutsideaddresses label");
+            let factoryIDInputs = document.querySelectorAll("#factoryoutsideaddresses input[name^='factoryoutsideID']");
+            let nameInputs = document.querySelectorAll("#factoryoutsideaddresses input[name^='factoryoutsidename']");
+            let addressInputs = document.querySelectorAll("#factoryoutsideaddresses input[name^='factoryoutsideaddress']");
+            console.log(nameInputs.length)
+            console.log(labels.length)
+
+            for (let i = 0; i < labels.length; i++) {
+                labels[i].textContent = "區域" + numberToChinese(i + 1);
+                factoryIDInputs[i].name = "factoryoutsideID" + (i + 1);
+                nameInputs[i].name = "factoryoutsidename" + (i + 1);
+                addressInputs[i].name = "factoryoutsideaddress" + (i + 1);
+            }
+
+
+
+        };
+        newAddressDiv.appendChild(newfactoryIDInput);
+
+        newAddressDiv.appendChild(newAddressLabel);
+        newAddressDiv.appendChild(space);
+
+        newAddressDiv.appendChild(newNameInput);
+        newAddressDiv.appendChild(space1);
+
+        newAddressDiv.appendChild(newAddressInput);
+
+        newAddressDiv.appendChild(newAddressValidation);
+        newAddressDiv.appendChild(space2);
+
+        newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        addressesDiv.appendChild(newAddressDiv);
+        factoryoutsideaddressCounter++;
+    }
+
+
+
+    //檢查廠址名稱是否重複
+    function Checkfactoryoutsidename() {
+        var names = []; // 存儲欄位值的陣列
+        var inputs = document.querySelectorAll('input[name^="factoryoutsidename"]'); // 選取所有名稱以 "name" 開頭的 <input> 元素
+
+        // 迴圈遍歷每個欄位
+        for (var i = 0; i < inputs.length; i++) {
+            var nameValue = inputs[i].value.trim();
+
+            // 檢查值是否為空
+            if (nameValue !== "") {
+                if (names.includes(nameValue)) {
+                    // 有重複值，顯示錯誤訊息並返回 false
+                    alert("廠外涵蓋區域有重複值");
+                    return false;
+                } else {
+                    names.push(nameValue); // 將值加入陣列中
+                }
+            }
+        }
+
+        // 沒有重複值，返回 true
+        return true;
+    }
+
+</script>
+<script nonce="@nonce">
+    let factoryInDeductionaddressCounter = 1; // 計數器用於自動遞增廠址名稱
+    function factoryInDeductionaddAddress() {
+        let addressesDiv = document.getElementById("factoryInDeductionaddresses");
+        let newAddressDiv = document.createElement("div");
+        let newAddressLabel = document.createElement("label");
+        newAddressLabel.textContent = "區域" + numberToChinese(factoryInDeductionaddressCounter + 1); // 遞增的廠址名稱
+        //輸入的名稱及廠址
+        let newNameInput = document.createElement("input");
+        newNameInput.setAttribute("name", "factoryInDeductionname" + (factoryInDeductionaddressCounter + 1));
+        newNameInput.setAttribute("placeholder", "名稱");
+
+        let space = document.createTextNode(" ");
+        let space1 = document.createTextNode(" ");
+        let space2 = document.createTextNode(" ");
+
+        let newAddressInput = document.createElement("input");
+        newAddressInput.setAttribute("name", "factoryInDeductionaddress" + (factoryInDeductionaddressCounter + 1));
+        newAddressInput.setAttribute("placeholder", "地址");
+
+        let newfactoryIDInput = document.createElement("input");
+        newfactoryIDInput.setAttribute("name", "factoryInDeductionID" + (factoryInDeductionaddressCounter + 1));
+        newfactoryIDInput.style.display = "none";
+
+        newAddressInput.style = "width:50%";
+
+        newNameInput.oninput = function (event) {
+            console.log(event.target.name);
+        };
+        newAddressInput.oninput = function (event) {
+            console.log(event.target.name);
+        };
+
+        let newAddressValidation = document.createElement("span");
+        newAddressValidation.className = "text-danger";
+        let deleteButton = document.createElement("button");
+        deleteButton.className = "btn btn-danger";
+        deleteButton.textContent = "刪除";
+        deleteButton.onclick = function () {
+            newAddressDiv.remove();
+            factoryInDeductionaddressCounter--;
+            let labels = document.querySelectorAll("#factoryInDeductionaddresses label");
+            let factoryIDInputs = document.querySelectorAll("#factoryInDeductionaddresses input[name^='factoryInDeductionID']");
+            let nameInputs = document.querySelectorAll("#factoryInDeductionaddresses input[name^='factoryInDeductionname']");
+            let addressInputs = document.querySelectorAll("#factoryInDeductionaddresses input[name^='factoryInDeductionaddress']");
+            console.log(nameInputs.length)
+            console.log(labels.length)
+
+            for (let i = 0; i < labels.length; i++) {
+                labels[i].textContent = "區域" + numberToChinese(i + 1);
+                factoryIDInputs[i].name = "factoryInDeductionID" + (i + 1);
+                nameInputs[i].name = "factoryInDeductionname" + (i + 1);
+                addressInputs[i].name = "factoryInDeductionaddress" + (i + 1);
+            }
+
+
+
+        };
+        newAddressDiv.appendChild(newfactoryIDInput);
+
+        newAddressDiv.appendChild(newAddressLabel);
+        newAddressDiv.appendChild(space);
+
+        newAddressDiv.appendChild(newNameInput);
+        newAddressDiv.appendChild(space1);
+
+        newAddressDiv.appendChild(newAddressInput);
+
+        newAddressDiv.appendChild(newAddressValidation);
+        newAddressDiv.appendChild(space2);
+
+        newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        addressesDiv.appendChild(newAddressDiv);
+        factoryInDeductionaddressCounter++;
+    }
+
+
+
+    //檢查廠址名稱是否重複
+    function CheckfactoryInDeductionname() {
+        var names = []; // 存儲欄位值的陣列
+        var inputs = document.querySelectorAll('input[name^="factoryInDeductionname"]'); // 選取所有名稱以 "name" 開頭的 <input> 元素
+
+        // 迴圈遍歷每個欄位
+        for (var i = 0; i < inputs.length; i++) {
+            var nameValue = inputs[i].value.trim();
+
+            // 檢查值是否為空
+            if (nameValue !== "") {
+                if (names.includes(nameValue)) {
+                    // 有重複值，顯示錯誤訊息並返回 false
+                    alert("廠外涵蓋區域有重複值");
+                    return false;
+                } else {
+                    names.push(nameValue); // 將值加入陣列中
+                }
+            }
+        }
+
+        // 沒有重複值，返回 true
+        return true;
+    }
+
+</script>
+<script nonce="@nonce">
+    let PersonCounter = 0; // 計數器用於自動遞增廠址名稱
+    function AddPerson() {
+        let PersonDiv = document.getElementById("Person");
+        let newPersonDiv = document.createElement("div");
+        let newPersonLabel = document.createElement("label");
+        newPersonLabel.textContent = "人員" + numberToChinese(PersonCounter + 1); // 遞增的廠址名稱
+        //輸入的名稱及廠址
+        let newNameInput = document.createElement("select");
+        newNameInput.setAttribute("name", "PersonName" + (PersonCounter + 1));
+        newNameInput.setAttribute("placeholder", "名稱");
+        let members = @Html.Raw(ViewBag.Member); // 从 ViewBag 中获取 JSON 数据
+
+        // 循环遍历数据并创建选项
+        for (let i = 0; i < members.length; i++) {
+            let option = document.createElement("option");
+            option.value = members[i].MemberId;
+            option.text = members[i].Name;
+            newNameInput.appendChild(option);
+        }
+
+        let space = document.createTextNode(" ");
+        let space1 = document.createTextNode(" ");
+        let space2 = document.createTextNode(" ");
+
+
+
+        let newfactoryIDInput = document.createElement("input");
+        newfactoryIDInput.setAttribute("name", "PersonID" + (PersonCounter + 1));
+        newfactoryIDInput.style.display = "none";
+        console.log(newfactoryIDInput)
+
+
+        newNameInput.oninput = function (event) {
+            console.log(event.target.name);
+        };
+
+
+        let newPersonValidation = document.createElement("span");
+        newPersonValidation.className = "text-danger";
+        let deleteButton = document.createElement("button");
+        deleteButton.className = "btn btn-danger";
+        deleteButton.textContent = "刪除";
+        deleteButton.onclick = function () {
+            newPersonDiv.remove();
+            PersonCounter--;
+            let labels = document.querySelectorAll("#Person label");
+            let factoryIDInputs = document.querySelectorAll("#Person input[name^='PersonID']");
+            let nameInputs = document.querySelectorAll("#Person select[name^='PersonName']");
+            for (let i = 0; i < labels.length; i++) {
+                labels[i].textContent = "人員" + numberToChinese(i + 1);
+                factoryIDInputs[i].name = "PersonID" + (i + 1);
+                nameInputs[i].name = "PersonName" + (i + 1);
+            }
+        };
+        newPersonDiv.appendChild(newfactoryIDInput);
+
+        newPersonDiv.appendChild(newPersonLabel);
+        newPersonDiv.appendChild(space);
+
+        newPersonDiv.appendChild(newNameInput);
+        newPersonDiv.appendChild(space1);
+
+
+        newPersonDiv.appendChild(newPersonValidation);
+        newPersonDiv.appendChild(space2);
+
+        newPersonDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        PersonDiv.appendChild(newPersonDiv);
+        PersonCounter++;
+    }
+
+
+
+    //檢查廠址名稱是否重複
+    function CheckPerson() {
+        var names = []; // 存儲欄位值的陣列
+        var inputs = document.querySelectorAll('select[name^="PersonName"]'); // 選取所有名稱以 "name" 開頭的 <input> 元素
+
+        // 迴圈遍歷每個欄位
+        for (var i = 0; i < inputs.length; i++) {
+            var nameValue = inputs[i].value.trim();
+
+            // 檢查值是否為空
+            if (nameValue !== "") {
+                if (names.includes(nameValue)) {
+                    // 有重複值，顯示錯誤訊息並返回 false
+                    alert("填表人員有重複值");
+                    return false;
+                }
+                else if (inputs[i].value.trim() == @Context.Session.GetString("AccountId")) {
+                    alert("填表人員不可選自己");
+                    return false;
+                }
+                else {
+                    names.push(nameValue); // 將值加入陣列中
+                }
+            }
+        }
+
+        // 沒有重複值，返回 true
+        return true;
+    }
+
+
+
+</script>
+<style nonce="@nonce">
+    /* styles.css */
+    .container {
+        display: grid;
+        place-items: center; /* 將子元素水平和垂直都置中 */
+    }
+
+    span {
+        color: red;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+</style>
+<div class='container-fluid'>
+    <div class="row">
+
+        <div class="col-lg-2">
+            <!-- 加入部分視圖，顯示左標題列 -->
+            @await Html.PartialAsync("Organize/Organize")
+        </div>
+        <div class="col-lg-10">
+            <div class='card'>
+
+
+                <form asp-action="BasicData" id="BasicData" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+
+                    <div class="row">
+
+                        <div class="col-lg-12">
+                            <h3>組織基本資料</h3>
+                            <hr />
+                            <div class='row'>
+                                <div class="col-lg-6 col-md-6">
+                                    <div class="form-group">
+                                        <span style='color: red;'>*</span><label class="control-label">機關代號(統一編號)<input type="button" class="ConpanyName-btn" value="代入"></label>
+                                        <input asp-for="OrganNumber" class="form-control" />
+                                        <span asp-validation-for="OrganNumber" class="text-danger"></span>
+                                        <label id="aaa"></label>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-6">
+                                    <div class="form-group">
+                                        <span style='color: red;'>*</span><label class="control-label">機關(公司)名稱</label>
+                                        <input asp-for="OrganName" class="form-control" />
+                                        <span asp-validation-for="OrganName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-6">
+                                    <div class="form-group">
+                                        <span style='color: red;'>*</span><label class="control-label">聯絡人名稱</label>
+                                        <input asp-for="ContactPerson" class="form-control" />
+                                        <span asp-validation-for="ContactPerson" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-6">
+                                    <div class="form-group">
+                                        <span style='color: red;'>*</span><label class="control-label">聯絡人電話</label>
+                                        <input asp-for="ContactPhone" class="form-control" />
+                                        <span asp-validation-for="ContactPhone" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-6">
+                                    <div class="form-group">
+                                        <span style='color: red;'>*</span><label class="control-label">聯絡人信箱</label>
+                                        <input asp-for="ContactEmail" class="form-control" />
+                                        <span asp-validation-for="ContactEmail" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 col-md-6">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 ">
+                                <div class='user-title'>數據蒐集期間</div>
+
+                                <hr />
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <div class='row'>
+                                        <div class="col-lg-6 col-md-6">
+                                            <span style='color: red;'>*</span><label class="control-label">盤查開始日期</label>
+                                            <input asp-for="StartTime" class="form-control" type="date" />
+                                            <span asp-validation-for="StartTime" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6">
+                                            <span style='color: red;'>*</span><label class="control-label">盤查結束日期</label>
+                                            <input asp-for="EndTime" class="form-control" type="date" />
+                                            <span asp-validation-for="EndTime" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-lg-12">
+                                <div class='user-title'>
+                                    <span style='color: red;'>*</span>盤查場域<button type="button" class="btn btn-primary add_adddress">新增</button>
+                                </div>
+                                <hr />
+                            </div>
+
+
+                            <div class="col-lg-12">
+                                <div id="addresses">
+
+                                    <label class="">場域一</label>
+                                    <input id="factoryID1" name="factoryID1" style="display:none" />
+                                    <input class="" id="name1" name="name1" placeholder="名稱" type='text' />
+
+                                    <input class="" id="address1" name="address1" placeholder="地址" style="width:50%" type='text' />
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 ">
+
+                                <div class='user-title'>
+                                    場域外涵蓋區域<button type="button" class="btn btn-primary add_factoryOut">新增</button>
+                                </div>
+
+                                <hr />
+                            </div>
+                            <div class="col-lg-12">
+                                <div id="factoryoutsideaddresses">
+
+                                    <label class="">區域一</label>
+                                    <input id="factoryoutsideID1" name="factoryoutsideID1" style="display:none" />
+                                    <input class="" id="factoryoutsidename1" name="factoryoutsidename1" placeholder="名稱" type='text' />
+
+                                    <input class="" id="factoryoutsideaddress1" name="factoryoutsideaddress1" placeholder="地址" type='text' style="width:50%" />
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 ">
+                                <div class='user-title'>
+                                    場域內扣除區域<button type="button"  class="btn btn-primary add_factoryIn">新增</button>
+                                </div>
+                                <hr />
+                            </div>
+                            <div class="col-lg-12">
+                                <div id="factoryInDeductionaddresses">
+
+                                    <label class="">區域一</label>
+                                    <input id="factoryInDeductionID1" name="factoryInDeductionID1" style="display:none" />
+                                    <input class="" id="factoryInDeductionname1" name="factoryInDeductionname1" placeholder="名稱" type='text' />
+
+                                    <input class="" id="factoryInDeductionaddress1" name="factoryInDeductionaddress1" type='text' placeholder="地址" style="width:50%" />
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12 ">
+
+                                <div class='user-title'>
+                                    共同填表人<button type="button"  class="btn btn-primary add_person">新增</button>
+                                </div>
+
+                                <hr />
+                            </div>
+                            <div class="col-lg-12">
+                                <div id="Person">
+                                    @*                        <label class="">人員1</label>
+                                    <input id="PersonID1" name="PersonID1" style="display:none" />
+                                    <input class="" id="PersonName1" name="PersonName1" placeholder="名稱" />*@
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="text-align:center">
+                            <input type="submit" value="存檔" class="btn  genbtn" />
+                        </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>

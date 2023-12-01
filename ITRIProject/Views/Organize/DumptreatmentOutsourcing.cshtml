@@ -1,0 +1,542 @@
+﻿@using Newtonsoft.Json;
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@{
+    ViewData["Title"] = "廢棄物處理";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+
+@section Scripts {
+
+    <script nonce="@nonce">
+
+        var htmlPath = '@ITRIProject.Controllers.CommonController.HtmlFileSave.HtmlPath';//檔案位置
+        //工廠選項
+        var factory = @Html.Raw(ViewBag.Factory);
+        var factoryItems = factory.map(function (item) {
+            return { name: item.Name, value: item.Id };
+        });
+
+        //單位選項
+        var Unit = @Html.Raw(ViewBag.Unit);
+        var unitItems = Unit.map(function (item) {
+            return { name: item.Name, value: item.Code };
+        });
+        var WasteMethod = @Html.Raw(ViewBag.WasteMethod);
+        var WasteMethodItems = WasteMethod.map(function (item) {
+            return { name: item.WasteMethod, value: item.WasteMethod };
+        });
+
+        var WasteName = @Html.Raw(ViewBag.WasteName);
+        console.log(WasteName)
+        var WasteNameItems = WasteName.map(function (item) {
+            return { name: item.Name, value: item.Name };
+        });
+
+        var url = new URL(window.location.href);
+        var basicid = url.pathname.split('/').pop(); // 從 URL 的路徑部分中獲取最後一個值作為 id
+        console.log(@Html.Raw(ViewBag.DeatilsJson));
+        $("#table1").jsGrid({
+
+            inserting: true,
+            editing: true,
+
+            sorting: true,
+            paging: false,
+            rownumbers: true,
+            pageLoading: false,
+            autoload: false,
+            //width: "2500px",
+            width: "100%",
+            height: "100%",
+            data: @Html.Raw(ViewBag.DeatilsJson),//如果data有值，一載入時顯示
+            //rowClick: function (args) {
+            //    // 點擊行時的處理邏輯
+            //    console.log("Clicked row: ", args.item);
+            //},
+            controller: {
+                //載入
+                loadData: function (filter) {
+                    return $.ajax({
+                        type: "GET",
+                        url: "/Tools/DumptreatmentOutsourcing?basicid=" + basicid + "&&type=LoadData",
+                        dataType: "json",
+                        data: filter
+                    }).done(function (response) {
+                        if (response.nologin) {
+                            alert("請先登入");
+                            window.location.href = "/Member/Login"; // 導向錯誤頁面
+                        }
+                    });
+                },
+                //新增
+                insertItem: function (item) {
+                    return $.ajax({
+                        type: "POST",
+                        url: "/Tools/DumptreatmentOutsourcing?basicid=" + basicid + "&&type=add",
+                        data: item
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+                    });
+                },
+                //修改
+                updateItem: function (item) {
+
+                    return $.ajax({
+                        type: "POST",
+                        url: "/Tools/DumptreatmentOutsourcing?basicid=" + basicid + "&&type=Edit",
+                        data: item,
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+                    });
+
+                },
+                //刪除
+                deleteItem: function (item) {
+                    return $.ajax({
+                        type: "POST",
+                        url: "/Tools/DumptreatmentOutsourcing?basicid=" + basicid + "&&type=delete",
+                        data: item
+                    }).done(function (response) {
+                        $("#table1").jsGrid("loadData");
+                    });
+                },
+            },
+            onItemInserting: function (args) {
+                $.ajax({
+                    url: "/Tools/DumptreatmentOutsourcing?basicid=" + basicid + "&&type=Check",
+                    type: "POST",
+                    data: args.item, // 將表單數據和驗證碼傳遞到後端
+                    async: false, // 设置为同步请求
+                    success: function (response) {
+                        if (response.error) {
+                            alert(response.error);
+                            args.cancel = true
+                        }
+                    },
+
+                });
+            },
+            onItemUpdating: function (args) {//檢查是否有這名稱與方式的組合
+                $.ajax({
+                    url: "/Tools/DumptreatmentOutsourcing?basicid=" + basicid + "&&type=Check",
+                    type: "POST",
+                    data: args.item, // 將表單數據和驗證碼傳遞到後端
+                    async: false, // 设置为同步请求
+                    success: function (response) {
+
+                        if (response.error) {
+                            alert(response.error);
+                            args.cancel = true
+                        }
+                    },
+                });
+            },
+            fields: [
+                { name: "sort", title: "編號", type: "rownumbers", width: 40, align: "center" },
+                { name: "factoryname", title: "<span style='color: red;'>*</span>場域", type: "select", items: factoryItems, valueField: "value", textField: "name", width: 60, align: "center" },
+                { name: "wastename", title: "<span style='color: red;'>*</span>廢棄物名稱", type: "select", items: WasteNameItems, valueField: "value", textField: "name", width: 60, align: "center" },
+                { name: "wastemethod", title: "<span style='color: red;'>*</span>廢棄物處理方式", type: "select", items: WasteMethodItems, valueField: "value", textField: "name", width: 70, align: "center" },
+                { name: "category", title: "類別", type: "text", width: 50, align: "center", inserting: false, editing: false },
+                { name: "cleanername", title: "清運商名稱", type: "text", width: 70, align: "center" },
+                { name: "finaladdress", title: "最終處理地址", type: "text", width: 70, align: "center" },
+                { name: "remark", title: "備註", type: "text", width: 50, align: "center" },
+                { name: "beforetotal", title: "總量", type: "text", width: 60, align: "center", inserting: false, editing: false },
+                { name: "beforeunit", title: "單位", type: "text", width: 80, align: "center", inserting: false, editing: false },
+                //{
+                //    name: "convertnum", title: "<span style='color: red;'>*</span>單位轉換之值<br><label class=\"tooltips\" onmouseover=\"showTooltip(event)\" onmouseout=\"hideTooltip()\"><img class=\"resize-image\" src=\"../../Img/QuestionMark2.png\" /><span class=\"tooltips-text\"><label style=\"font-size: 10px;\"><br>請與係數管理者討論數據需換算為哪一單位後再填寫</label></ span > </label>", type: "text", width: 80, align: "center", validate: [{
+                //        validator: function (value, item) {
+                //            var num = parseFloat(value);
+                //            return num > 0 && /^-?\d+(\.\d{1,4})?$/.test(value);//判斷是否為大於0的數，小數點限制4位
+                //        },
+                //        message: "單位轉換之值，請輸入大於0的數字，最多4位小數"
+                //    }]
+                //},
+                //{ name: "convertunit", title: "單位轉換之單位", type: "text", width: 100, align: "center", inserting: false, editing: false },
+                //{ name: "aferttotal", title: "轉換後總量", type: "text", width: 60, align: "center", inserting: false, editing: false },
+                //{ name: "afertUnit", title: "<span style='color: red;'>*</span>轉換後單位", type: "select", items: unitItems, valueField: "value", textField: "name", width: 90, align: "center" },
+                {
+                    name: "distributeratio", title: "<span style='color: red;'>*</span>分配比率(%)", type: "text", width: 60, align: "center", validate: [{
+                        validator: function (value, item) {
+                            var num = parseFloat(value);
+                            return num > 0 && num <= 100 && /^-?\d+(\.\d{1,2})?$/.test(value);//判斷是否介於0-100的數，小數點限制2位
+                        },
+                        message: "分配比率(%)，請輸入介於0-100之間的數，最多2位小數"
+                    }]
+                },
+                {
+                    name: "detail", title: "詳細資料", width: 80, align: "center",
+                    itemTemplate: function (value, item) {
+                        return $(`<img src=\"/Img/look.png\" class='CallSubwin-btn' data-id='${item.id}'  data-basicid='${basicid}'  data-wastename='${item.wastename}'>`);//(該筆資料的id，基本資料ID，能源別)
+                    }
+                },
+                    { type: "control", editButton: true, modeSwitchButton: true },
+                    {               
+                    name: "evidencefile",
+                    title: "佐證資料",
+                    itemTemplate: function (value, item) {
+                        return $(`<img src=\"/Img/edit.png\" class='CallFileManage-btn' data-id='${item.id}'  data-basicid='${basicid}'  data-wastename='${item.wastename}'>`);//(該筆資料的id，基本資料ID，能源別)
+                    },
+                    width: 80,
+                    align: "center"
+                }
+            ]
+        });
+        $(document).on("click", ".CallSubwin-btn", function () {
+            var id = $(this).data('id');
+            var basicid = $(this).data('basicid');
+            var url = '/OrganizeDetail/DumptreatmentOutsourcingdetail?id=' + id + "&&BasicId=" + basicid;//id為該筆item的id
+            window.open(url, "_blank", "width=1200,height=600,resizable=no,location=no,scrollbars=no,status=no");
+        });
+        $(document).on("click", ".CallFileManage-btn", function () {
+            var id = $(this).data('id');
+            var basicid = $(this).data('basicid');
+            var wastename = String($(this).data('wastename'));
+            var url = '/OrganizeFile/EvidenceFileDetail?BasicId=' + basicid + '&ItemId=' + id + '&WhereForm=廢棄物處理';//id為該筆item的id
+            subinitB('1000px', '100%', url, '佐證資料-' + wastename);
+        });
+
+
+        //匯入excel
+        function ImportExcel() {
+            // 创建一个自定义对话框
+            var dialog = document.createElement("div");
+            dialog.innerHTML = `
+                                                            <p>帳單間距為：</p>
+                                                            <button id="oneMonthButton">1個月</button>
+                                                            <button id="twoMonthButton">2個月</button>
+                                                            <button id="Cancel">取消</button>
+                                                        `;
+
+            // 样式化对话框
+            dialog.style.position = "fixed";
+            dialog.style.top = "50%";
+            dialog.style.left = "50%";
+            dialog.style.transform = "translate(-50%, -50%)";
+            dialog.style.backgroundColor = "white";
+            dialog.style.padding = "20px";
+            dialog.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.5)";
+            dialog.style.zIndex = "9999";
+
+            // 将对话框添加到页面
+            document.body.appendChild(dialog);
+
+            // 添加点击事件处理程序
+            document.getElementById("oneMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                location.href = '../../OrganizeExcel/DumptreatmentOutsourcingImportExcel?BasicId=' + basicid + '&SelMonth=1';
+
+            });
+
+            document.getElementById("twoMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                location.href = '../../OrganizeExcel/DumptreatmentOutsourcingImportExcel?BasicId=' + basicid + '&SelMonth=2';
+
+            });
+            document.getElementById("Cancel").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+            });
+        }
+
+        //匯出excel DumptreatmentOutsourcing
+        function ExportExcel() {
+            var factoryNames = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.Factory)));
+            var Transportation = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.Transportation)));
+            var Car = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.Car)));
+            var Units = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.Unit)));
+            var AfterUnits = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.AfterUnits)));
+            var WasteName = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.WasteName)));
+            var WasteMethod = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.WasteMethod)));
+            var monthcount = (@ViewBag.monthcount+1);
+            var year = (@ViewBag.year - 1911);
+            var month = (@ViewBag.month-1);
+
+            // 在這裡調用 ExportExcel_DumptreatmentOutsourcing 函數並傳遞相應的參數
+            // 创建一个自定义对话框
+            var dialog = document.createElement("div");
+            dialog.innerHTML = `
+                                                                    <p>帳單間距為：</p>
+                                                                    <button id="oneMonthButton">1個月</button>
+                                                                    <button id="twoMonthButton">2個月</button>
+                                                                    <button id="Cancel">取消</button>
+                                                                `;
+
+            // 样式化对话框
+            dialog.style.position = "fixed";
+            dialog.style.top = "50%";
+            dialog.style.left = "50%";
+            dialog.style.transform = "translate(-50%, -50%)";
+            dialog.style.backgroundColor = "white";
+            dialog.style.padding = "20px";
+            dialog.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.5)";
+            dialog.style.zIndex = "9999";
+
+            // 将对话框添加到页面
+            document.body.appendChild(dialog);
+
+            // 添加点击事件处理程序
+            document.getElementById("oneMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                ExportExcel_DumptreatmentOutsourcing(factoryNames, Transportation, Car, Units, monthcount, year, month, WasteName, WasteMethod, AfterUnits);
+            });
+
+            document.getElementById("twoMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                ExportExcel_TwoMonthDumptreatmentOutsourcing(factoryNames, Transportation, Car, Units, monthcount, year, month, WasteName, WasteMethod, AfterUnits);
+            });
+            document.getElementById("Cancel").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+            });
+        }
+
+        function ImportCSV() {
+            // 创建一个自定义对话框
+            var dialog = document.createElement("div");
+            dialog.innerHTML = `
+                                                                    <p>帳單間距為：</p>
+                                                                    <button id="oneMonthButton">1個月</button>
+                                                                    <button id="twoMonthButton">2個月</button>
+                                                                    <button id="Cancel">取消</button>
+                                                                `;
+
+            // 样式化对话框
+            dialog.style.position = "fixed";
+            dialog.style.top = "50%";
+            dialog.style.left = "50%";
+            dialog.style.transform = "translate(-50%, -50%)";
+            dialog.style.backgroundColor = "white";
+            dialog.style.padding = "20px";
+            dialog.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.5)";
+            dialog.style.zIndex = "9999";
+
+            // 将对话框添加到页面
+            document.body.appendChild(dialog);
+
+            // 添加点击事件处理程序
+            document.getElementById("oneMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                location.href = '../../OrganizeCSV/DumptreatmentOutsourcingImport?BasicId=' + basicid + '&SelMonth=1';
+
+            });
+
+            document.getElementById("twoMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                location.href = '../../OrganizeCSV/DumptreatmentOutsourcingImport?BasicId=' + basicid + '&SelMonth=2';
+
+            });
+            document.getElementById("Cancel").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+            });
+        }
+        function ExportCSV() {
+            var monthcount = (@ViewBag.monthcount+1);
+            var year = (@ViewBag.year - 1911);
+            var month = (@ViewBag.month-1);
+
+            // 在這裡調用 ExportExcel_DumptreatmentOutsourcing 函數並傳遞相應的參數
+            // 创建一个自定义对话框
+            var dialog = document.createElement("div");
+            dialog.innerHTML = `
+                                                                    <p>帳單間距為：</p>
+                                                                    <button id="oneMonthButton">1個月</button>
+                                                                    <button id="twoMonthButton">2個月</button>
+                                                                    <button id="Cancel">取消</button>
+                                                                `;
+
+            // 样式化对话框
+            dialog.style.position = "fixed";
+            dialog.style.top = "50%";
+            dialog.style.left = "50%";
+            dialog.style.transform = "translate(-50%, -50%)";
+            dialog.style.backgroundColor = "white";
+            dialog.style.padding = "20px";
+            dialog.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.5)";
+            dialog.style.zIndex = "9999";
+
+            // 将对话框添加到页面
+            document.body.appendChild(dialog);
+
+            // 添加点击事件处理程序
+            document.getElementById("oneMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                ExportCSV_DumptreatmentOutsourcing(monthcount, year, month);
+
+            });
+
+            document.getElementById("twoMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                ExportCSV_TwoMonthDumptreatmentOutsourcing(monthcount, year, month);
+
+            });
+            document.getElementById("Cancel").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+            });
+        }
+        function ImportJSON() {
+            // 创建一个自定义对话框
+            var dialog = document.createElement("div");
+            dialog.innerHTML = `
+                                                                            <p>帳單間距為：</p>
+                                                                            <button id="oneMonthButton">1個月</button>
+                                                                            <button id="twoMonthButton">2個月</button>
+                                                                            <button id="Cancel">取消</button>
+                                                                        `;
+
+            // 样式化对话框
+            dialog.style.position = "fixed";
+            dialog.style.top = "50%";
+            dialog.style.left = "50%";
+            dialog.style.transform = "translate(-50%, -50%)";
+            dialog.style.backgroundColor = "white";
+            dialog.style.padding = "20px";
+            dialog.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.5)";
+            dialog.style.zIndex = "9999";
+
+            // 将对话框添加到页面
+            document.body.appendChild(dialog);
+
+            // 添加点击事件处理程序
+            document.getElementById("oneMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                location.href = '../../OrganizeJSON/DumptreatmentOutsourcingImport?BasicId=' + basicid + '&SelMonth=1';
+
+            });
+
+            document.getElementById("twoMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                location.href = '../../OrganizeJSON/DumptreatmentOutsourcingImport?BasicId=' + basicid + '&SelMonth=2';
+
+            });
+            document.getElementById("Cancel").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+            });
+        }
+        function ExportJSON() {
+            var monthcount = (@ViewBag.monthcount+1);
+            var year = (@ViewBag.year - 1911);
+            var month = (@ViewBag.month-1);
+
+            // 在這裡調用 ExportExcel_DumptreatmentOutsourcing 函數並傳遞相應的參數
+            // 创建一个自定义对话框
+            var dialog = document.createElement("div");
+            dialog.innerHTML = `
+                                                                            <p>帳單間距為：</p>
+                                                                            <button id="oneMonthButton">1個月</button>
+                                                                            <button id="twoMonthButton">2個月</button>
+                                                                            <button id="Cancel">取消</button>
+                                                                        `;
+
+            // 样式化对话框
+            dialog.style.position = "fixed";
+            dialog.style.top = "50%";
+            dialog.style.left = "50%";
+            dialog.style.transform = "translate(-50%, -50%)";
+            dialog.style.backgroundColor = "white";
+            dialog.style.padding = "20px";
+            dialog.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.5)";
+            dialog.style.zIndex = "9999";
+
+            // 将对话框添加到页面
+            document.body.appendChild(dialog);
+
+            // 添加点击事件处理程序
+            document.getElementById("oneMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                ExportJSON_DumptreatmentOutsourcing(monthcount, year, month);
+
+            });
+
+            document.getElementById("twoMonthButton").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+                ExportJSON_TwoMonthDumptreatmentOutsourcing(monthcount, year, month);
+
+            });
+            document.getElementById("Cancel").addEventListener("click", function () {
+                document.body.removeChild(dialog); // 移除对话框
+            });
+        }
+
+        $(".exportExcel").on("click", function () {
+            ExportExcel();
+        });
+        $(".exportCSV").on("click", function () {
+            ExportCSV();
+        });
+        $(".exportJSON").on("click", function () {
+            ExportJSON();
+        });
+
+        $(".importExcel").on("click", function () {
+            ImportExcel();
+        });
+        $(".importCSV").on("click", function () {
+            ImportCSV();
+        });
+        $(".importJSON").on("click", function () {
+            ImportJSON();
+        });
+
+    </script>
+
+
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-2">
+            <!-- 加入部分視圖，顯示左標題列 -->
+            @await Html.PartialAsync("Organize/Organize")
+        </div>
+        <div class="col-lg-10">
+            <div class="card">
+                <h3>
+                    廢棄物
+                    <label class="tooltips">
+                        @*懸浮文字文字*@
+                        <img src="~/Img/QuestionMark.png" class="QuestionMark" />
+
+                        <span class="tooltips-text">
+                            請確認盤查邊界之全部排放，例如工業廢棄物(含回收)、生活廢棄物、廢水處理….
+                        </span>
+                    </label>
+                    <a href="../../systemfile/廢棄物處理範本.pdf" target="_blank">
+                        <button class="genbtn">範本</button>
+                    </a>
+                </h3>
+
+                    <div style="margin: 10px 0;">
+
+                        <button class="genbtn exportExcel" value="">下載Excel範例</button>
+                        <button class="genbtn importExcel" value="">匯入Excel</button>
+                        <button class="genbtn exportCSV" value="">下載CSV範例</button>
+                        <button class="genbtn importCSV" value="">匯入CSV</button>
+                        <button class="genbtn exportJSON" value="">下載JSON範例</button>
+                        <button class="genbtn importJSON" value="">匯入JSON</button>
+                    </div>
+                
+
+                <form asp-action="DumptreatmentOutsourcing" method="get" id="DumptreatmentOutsourcing">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    @*             <input name="search" type="text" placeholder="關鍵字搜尋" />
+                    <input type="submit" value="查詢" class="btn btn-primary genbtn" /> *@
+                    <div class="scrollable-container jsgrid" style="height:500px;margin-top:10px">
+                        <div id="table1"></div>
+                    </div>
+                    <br />
+
+                </form>
+                <form asp-action="DumptreatmentOutsourcing" id="DumptreatmentOutsourcing">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group textcenter">
+                        <input type="submit" value="下一頁" class="btn btn-primary genbtn" />
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

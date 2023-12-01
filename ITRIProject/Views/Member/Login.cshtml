@@ -1,0 +1,241 @@
+﻿@model ITRIProject.Models.Member
+@{
+    ViewData["Title"] = "Login";
+    string err = ViewBag.err;
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+@section Scripts {
+    <script nonce="@nonce">
+        $(".refreshCaptcha-btn").on("click", function () {
+            refreshCaptcha();
+        });
+        function refreshCaptcha() {
+            var imageElement = document.getElementById("codeImage");
+
+            // 發送 Ajax 請求獲取新的驗證碼圖片
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/Common/Captcha", true);
+            xhr.responseType = "blob";
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    var blob = xhr.response;
+                    var imageUrl = URL.createObjectURL(blob);
+
+                    // 更新圖片的 src 屬性
+                    imageElement.src = imageUrl;
+                }
+            };
+
+            xhr.send();
+        }
+        $(function () {
+
+            $("#login").validate({
+                rules: {
+                    Account: "required",
+                    Passwd: "required",
+                    captchaCode: "required",
+                },
+                messages: {
+                    Account: "請輸入帳號",
+                    Passwd: "請輸入密碼",
+                    captchaCode: "請輸入驗證碼",
+                }
+            });
+        });
+
+        $(document).ready(function () {
+            $("#login").submit(function (event) {
+                event.preventDefault(); // 防止表單的預設提交行為
+                var isValid = $("#login").validate().form();
+                if (!isValid) {
+                    return false;
+                }
+                var formData = $(this).serialize(); // 序列化表單數據
+
+                $.ajax({
+                    url: "/Member/Login",
+                    type: "POST",
+                    data: formData, // 將表單數據和驗證碼傳遞到後端
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.sucess == "0") {
+                            // 登入成功，執行相應的操作
+                            window.location.href = "/Organize/Details";
+                        }
+                        else if (response.sucess == "1") {
+                            window.location.href = "/MemberMangment/Index";
+                        }
+                        else if (response.editpasswd) {
+                            alert(response.editpasswds);
+                            window.location.href = "/Member/EditPassword";
+
+                        }
+                        else {
+                            // 登入失敗，處理錯誤回應
+                            refreshCaptcha();
+                            alert(response.error);
+                        }
+                    },
+                });
+            });
+        });
+    </script>
+}
+
+<div class="container">
+    <div class="login">
+        <div class="login_box">
+            <h1>登入</h1>
+
+            <hr />
+            <div class=" container" id="otherLogin">
+
+                <form asp-action="login" id="login">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div id="citizenCardLogin" class="loginContainer">
+
+                        <div class="form-group">
+
+                            <label class="control-label">帳號</label>
+                            <input asp-for="Account" class="form-control" autocomplete="off" />
+                            <span asp-validation-for="Account" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">密碼</label>
+                            <input asp-for="Passwd" class="form-control" type="password" autocomplete="off" />
+                            <span asp-validation-for="Passwd" class="text-danger"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">驗證碼</label>
+                            <div class="code_box">
+                                <input name="captchaCode" class="form-control" type="text" autocomplete="off" />
+                                <img src="/Common/Captcha/" class="codeImage refreshCaptcha-btn" id="codeImage" style="cursor:pointer;" />
+                            </div>
+
+                        </div>
+
+                        <div class="form-group">
+                            <input type="submit" value="登入" class="btn btn-primary genbtn" />
+                            <p>@Html.ActionLink("忘記密碼", "ForgetPwd", "Member")</p>
+
+                        </div>
+                    </div>
+                </form>
+
+                <div class="container d-flex justify-content-center">
+                    @*bootstrap樣式*@
+
+                </div>
+                <div class="container d-flex justify-content-center mb-2">
+                    @*bootstrap樣式*@
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <h3> 相關連結:</h3>
+
+    <div class="marquee-container">
+        <div class="marquee-content">
+            <a href="https://top.energypark.org.tw/topfirm_test/Services" target="_blank"> <img src="/Img/energypark.jpg" style="width:100%; max-height:80px; max-width:200px;" alt="節電服務團" /></a>
+            <a href="https://smepass.gov.tw/SMEAExtranet/index" target="_blank"> <img src="/Img/smepass.gif" style="width:100%; max-height:80px; max-width:220px;" alt="smepass" /></a>
+            <a href="https://carboneztools.glideapp.io/" target="_blank"> <img src="/Img/reducecarbon.png" style="width:100%; max-height:80px; max-width:200px;" alt="減碳菜單" /></a>
+            <a href="https://page.line.me/?accountId=caas" target="_blank"> <img src="/Img/CService.jpg" style="width:100%; max-height:80px; max-width:200px;" alt="減碳菜單" /></a>
+            <a href="https://ghg.tgpf.org.tw/CVResources/CVResources_more?id=0b8ff6b5268b4b18a1071e7c393a79c0" target="_blank"> <img src="/Img/carbonez.png" style="width:100%; max-height:80px; max-width:200px;" alt="碳估算工具" /></a>
+            <a href="https://www.moenv.gov.tw/" target="_blank"> <img src="/Img/moenv.png" style="width:100%; max-height:80px; max-width:200px;" alt="環境部" /></a>
+            <a href="https://ghgregistry.moenv.gov.tw/lepa_ghg/" target="_blank"> <img src="/Img/moenv_ghg.png" style="width:100%; max-height:80px; max-width:200px;" alt="環境部GHG平台" /></a>
+
+            <a href="https://top.energypark.org.tw/topfirm_test/Services" target="_blank"> <img src="/Img/energypark.jpg" style="width:100%; max-height:80px; max-width:200px;" alt="節電服務團" /></a>
+            <a href="https://smepass.gov.tw/SMEAExtranet/index" target="_blank"> <img src="/Img/smepass.gif" style="width:100%; max-height:80px; max-width:220px;" alt="smepass" /></a>
+            <a href="https://carboneztools.glideapp.io/" target="_blank"> <img src="/Img/reducecarbon.png" style="width:100%; max-height:80px; max-width:200px;" alt="減碳菜單" /></a>
+            <a href="https://page.line.me/?accountId=caas" target="_blank"> <img src="/Img/CService.jpg" style="width:100%; max-height:80px; max-width:200px;" alt="減碳菜單" /></a>
+            <a href="https://ghg.tgpf.org.tw/CVResources/CVResources_more?id=0b8ff6b5268b4b18a1071e7c393a79c0" target="_blank"> <img src="/Img/carbonez.png" style="width:100%; max-height:80px; max-width:200px;" alt="碳估算工具" /></a>
+
+        </div>
+
+    </div>
+</div>
+
+<div class="footer">
+    <div class="container">
+
+        <div class="wrap2 mx-auto px-3 px-md-4 px-lg-5 fw-light fs-md-6">
+
+            <div class="row">
+                <div class="col-12 col-md">
+                    <div class="ftBtmLogo mb-3">
+                        <a class="d-inline-block" href="/index.html">
+                            <!-- 淺色版面的logo -->
+                            <img class="mw-100 lightShow" src="/Img/logo.svg" width="340" height="56" alt="moda — 數位發展部 Ministry of Digital Affairs">
+
+                        </a>
+                    </div>
+                    <div class="ftBtmRights">
+                        <p class="mb-2 mb-md-3"><a class="fileTypeI ms-0 me-1" href="https://spdx.org/licenses/CC0-1.0" target="_blank" title="Creative Commons Zero (另開新視窗)">CC0</a>No copyright reserved.</p>
+
+
+                    </div>
+                </div>
+                <div class="col-12 col-md text-md-end">
+                    <ul class="listSlash list-unstyled list-inline">
+                        <li class="list-inline-item">
+                            <a class="text-decoration-none" href="/announcement/privacy/949.html" title="隱私權及網站安全政策" target="_self">隱私權及網站安全政策</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a class="text-decoration-none" href="/announcement/publicdeclare/951.html" title="政府網站資料開放宣告" target="_self">政府網站資料開放宣告</a>
+                        </li>
+                    </ul>
+                    <ul class="listAdd list-unstyled list-inline">
+                        <li>地址：<a class="ftAdd text-decoration-none" href="https://www.google.com.tw/maps/place/臺北市中正區延平南路143號" rel="noreferrer noopener" target="_blank" title="數位發展部地圖位置(另開新視窗)">100057 臺北市中正區延平南路143號</a></li>
+                        <li class="list-inline-item ms-0 ms-md-2 me-2 me-md-0">服務電話：<a class="text-decoration-none" href="tel:0800-770-707" title="數位發展部聯絡電話">0800-770-707</a></li>
+                        <li class="list-inline-item ms-0 ms-md-2 me-2 me-md-0">傳真電話：<a class="text-decoration-none" href="tel:02-2380-0791" title="數位發展部傳真電話">02-2380-0791</a></li>
+                        <li class="list-inline-item ms-0 ms-md-2 me-2 me-md-0">民意信箱：<a class="text-decoration-none" href="https://www-mailbox.moda.gov.tw/" target="_blank" title="民意信箱（另開新視窗）">www-mailbox.moda.gov.tw</a></li>
+                        <br />
+                        <li class="list-inline-item ms-0 ms-md-2 me-2 me-md-0">Github源碼庫<a class="text-decoration-none" href="Github" title=""></a></li>
+                        <li class="list-inline-item ms-0 ms-md-2 me-2 me-md-0">官網原始碼<a class="text-decoration-none" href="Github" title=""></a></li>
+                    </ul>
+                    <div class="col-md-auto">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script nonce="@nonce">
+    const citizenCardButton = document.getElementById('citizenCardButton');
+    const temporaryPasswordButton = document.getElementById('temporaryPasswordButton');
+    const citizenCardLogin = document.getElementById('citizenCardLogin');
+    const temporaryPasswordLogin = document.getElementById('temporaryPasswordLogin');
+    document.getElementById('info').style.color = "red";
+    function selectButton(buttonElement) {
+        // 移除所有按鈕的選中樣式
+        citizenCardButton.classList.remove('active');
+        temporaryPasswordButton.classList.remove('active');
+
+        // 加上選中樣式至目前按鈕
+        buttonElement.classList.add('active');
+    }
+
+    citizenCardButton.addEventListener('click', function () {
+        citizenCardLogin.style.display = 'block';
+        temporaryPasswordLogin.style.display = 'none';
+
+        selectButton(citizenCardButton);
+    });
+
+    temporaryPasswordButton.addEventListener('click', function () {
+        myLoad();
+        citizenCardLogin.style.display = 'none';
+        temporaryPasswordLogin.style.display = 'block';
+
+        selectButton(temporaryPasswordButton);
+    });
+
+    function ReturnLogin() {
+        // 替换下面的 URL 为你要跳转的网页的 URL
+        window.location.href = "Login";
+    }
+</script>

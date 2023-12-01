@@ -1,0 +1,206 @@
+﻿
+@{
+    Layout = null;
+    ViewBag.Title = "Error";
+}
+
+<!DOCTYPE html>
+<html>
+@{
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="16x16" href="~/Img/Moda.ico">
+    <title>GHG-數位產業自願性溫室氣體盤查系統</title>
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/magnific-popup.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/magnific-popup/magnific-popup.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid-theme.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid-theme.min.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiColor.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiLayout.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiRWD.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+
+    <style nonce="@nonce">
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .site-content {
+            min-height: 100vh; /* 使用視窗高度作為最小高度 */
+            margin-bottom: -50px; /* 扣除 footer 的高度 */
+        }
+
+        .circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: red;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+            .circle span {
+                color: white;
+            }
+
+        head_div {
+            margin-right: 30px;
+            flex-grow: 0;
+        }
+    </style>
+
+    <link nonce="@nonce" rel="stylesheet" href="~/css/error-pages.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/error-style.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                @if (Context.Session.GetString("Account") != null)
+                {
+                    <a class="navbar-brand" asp-area="" asp-controller="Organize" asp-action="Details"><img src='/Img/logo.png'></a>
+                }
+                else
+                {
+                    <a class="navbar-brand" asp-area="" asp-controller="Member" asp-action="Login"><img src='/Img/logo.png'></a>
+                }
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between textright head_div" style="margin-right: 30px; flex-grow:0">
+                    <div class='font_set'>
+                        <button id="smallFont">A-</button>
+                        <button id="mediumFont">A</button>
+                        <button id="largeFont">A+</button>
+                    </div>
+                    <ul class="navbar-nav  ml-auto">
+                        <li class="nav-item dropdown">
+
+                            <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @if (Context.Session.GetString("Account") != null)
+                                {
+
+                                    <label id="MemberText">
+                                        @Context.Session.GetString("name") @Context.Session.GetString("Account")
+                                    </label>
+                                }
+                                else
+                                {
+                                    <label>
+                                        會員資料
+                                    </label>
+                                }
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                @if (Context.Session.GetString("AccountId") == null)
+                                {
+                                    <li><a class="dropdown-item" href="/Member/Login">登入</a></li>
+                                    <li><a class="dropdown-item" href="/Member/Register">註冊</a></li>
+                                }
+                                else
+                                {
+                                    <li><a class="dropdown-item" href="/Member/Member">會員基本資料</a></li>
+                                    <li><a class="dropdown-item" href="/Member/EditPassword">修改密碼</a></li>
+                                    @if (Context.Session.GetString("LoginType") == "microsoft")
+                                    {
+                                        <li><a id="SignoffNotifyText" class="dropdown-item" href="/SignOff/SignoffNotify">通知</a></li>
+
+                                    }
+                                    <li><a class="dropdown-item" href="/Member/Logout">登出</a></li>
+                                }
+
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="site-content">
+        <main role="main" class="pb-3">
+            <section id="wrapper" class="error-page">
+                <div class="error-box">
+                    <div class="center-align">
+                        <div class="error-body">
+                            <h1>404</h1>
+                            <h3>Page Not Found!</h3>
+                            <p class="m-t-30 m-b-30">YOU SEEM TO BE TRYING TO FIND HIS WAY HOME</p>
+                            <a href="/" class="btn btn-round red waves-effect waves-light m-b-40">Back to home</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <!-- ============================================================== -->
+    <!-- All Required js -->
+    <!-- ============================================================== -->
+    <script nonce="@nonce" src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script nonce="@nonce" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script nonce="@nonce" src="~/lib/exceljs/exceljs.js"></script>
+    <script nonce="@nonce" src="~/js/site.js" asp-append-version="true"></script>
+    <script nonce="@nonce" src="~/js/OutputExcel.js" asp-append-version="true"></script>
+    <script nonce="@nonce" src="~/js/OutputCsv.js" asp-append-version="true"></script>
+    <script nonce="@nonce" src="~/js/OutputJson.js" asp-append-version="true"></script>
+    @*      <script src="~/js//tabletoxlsx.js"></script> *@
+    <script nonce="@nonce" src="~/js/exceljs.min.js"></script>
+    <script nonce="@nonce" src="~/js/table2excel.core.js"></script>
+    <script nonce="@nonce" src="~/lib/echarts/echarts.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/magnific-popup/jquery.magnific-popup.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/magnific-popup/init-magnificPopup.js"></script>
+
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid.min.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid-fr.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/layer/layer.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script nonce="@nonce">
+        var OriginalMemberText;//保留初始文字，SignoffNotify裡面呼叫
+        var OriginalSignoffNotifyText;
+        OriginalMemberText = document.getElementById("MemberText").innerHTML;
+        OriginalSignoffNotifyText = document.getElementById("SignoffNotifyText").innerHTML;
+        $.ajax({
+            url: "/Signoff/SignoffNotifyNum",
+            type: "POST",
+            dataType: "json",
+            success: function (response) {
+                if (response.success) {
+                    if (response.signoffnotifynum != 0) {
+                        document.getElementById("MemberText").innerHTML += '<label class="circle"><span>' + response.signoffnotifynum + '</span></label>';
+                        document.getElementById("SignoffNotifyText").innerHTML += '<label class="circle"><span>' + response.signoffnotifynum + '</span></label>';
+                    }
+                } else {
+                    alert(response.error);
+                }
+            },
+        });
+        var forms = document.getElementsByTagName('form');
+
+        for (var i = 0; i < forms.length; i++) {
+            forms[i].autocomplete = 'off';
+        }
+
+        var inputs = document.getElementsByTagName('input');
+
+        for (var i = 0; i < inputs.length; i++) {
+            inputs[i].autocomplete = 'off';
+        }
+
+    </script>
+</body>
+
+</html>

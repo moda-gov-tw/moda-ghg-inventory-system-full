@@ -1,0 +1,277 @@
+﻿@using Newtonsoft.Json;
+@model ITRIProject.Models.View.WorkinghourVM
+@{
+    ViewData["Title"] = "工作時數";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+@section Scripts{
+    <script nonce="@nonce">
+        var url = new URL(window.location.href);
+        var basicid = url.pathname.split('/').pop(); // 從 URL 的路徑部分中獲取最後一個值作為 id
+
+        var factoryList = @Html.Raw(Json.Serialize(ViewBag.Factory)); // 这里使用了Razor语法
+        var factoryCount = factoryList.length; //工廠數量
+
+        $(document).ready(function () {
+            if (event.charCode === "13") {
+                $("#submitBtn").click();
+            }
+
+            $("#Workinghour").submit(function (event) {//提交事件
+                //event.preventDefault(); // 阻止表单的默认提交行为
+                //var EvidenceFile = $("#EvidenceFile").get(0).files[0];//抓取檔案
+                //formData.append("EvidenceFile", EvidenceFile);//檔案加進去formData陣列
+
+
+                if ($("#Workinghour").valid()) { //前端驗證
+                    var formData = new FormData($(this)[0]);
+                    $.ajax({
+                        url: "/Organize/Workinghour/" + basicid,//傳入後端
+                        type: "POST",
+                        data: formData, // 將表單數據傳遞到後端
+                        processData: false,
+                        contentType: false,
+                        dataType: "json",
+                        success: function (response) {
+                            if (response.nologin) {
+                                alert("請先登入")
+                                parent.$.magnificPopup.close();
+                            }
+                            else if (response.success) {
+                                //var id = response.id; // 獲取回傳的 id 值
+                                window.location.href = "/Organize/EvidenceFileManage/" + basicid;
+                            }
+                            else {
+                                // 登入失敗，處理錯誤回應
+                                alert(response.error);
+                            }
+                        },
+                    });
+                }
+            });
+        });
+        $(document).on("click", ".CallFileManage-btn", function () {
+            var id = $(this).data('id');
+            var basicid = $(this).data('basicid');
+            var title = $(this).data('title');
+            var factory = $(this).data('factory');
+            console.log(title)
+            var url = '/OrganizeFile/EvidenceFileDetail?BasicId=' + basicid + '&ItemId=' + id + `&WhereForm=工時資料/${factory}`;
+            subinitB('1000px', '100%', url, '佐證資料-' + factory + '-' + title);
+        });
+
+        //匯入excel
+        function ImportExcel() {
+            location.href = '../../OrganizeExcel/WorkinghourImportExcel?BasicId=' + basicid;
+        }
+
+        //匯出excel
+        function ExportExcel() {
+            var factoryNames = JSON.parse(@Html.Raw(JsonConvert.SerializeObject(ViewBag.FactoryItem)));
+
+            // 在這裡調用 ExportExcel_Workinghour 函數並傳遞相應的參數
+            ExportExcel_Workinghour(factoryNames);
+        }
+
+        //CSV
+        function ImportCSV() {
+            location.href = '../../OrganizeCSV/WorkinghourImport?BasicId=' + basicid;
+        }
+        function ExportCSV() {
+            ExportCSV_Workinghour();
+        }
+
+        //Json
+        function ImportJSON() {
+            location.href = '../../OrganizeJSON/WorkinghourImport?BasicId=' + basicid;
+        }
+        function ExportJSON() {
+            ExportJSON_Workinghour();
+        }
+
+        $(function () {
+            $.validator.addMethod("workDayHourRange", function (value, element) {
+                return this.optional(element) || (parseFloat(value) >= 0 && parseFloat(value) <= 12);
+            });//0-12的數值
+
+            $.validator.addMethod("twoDecimalPlaces", function (value, element) {
+                return this.optional(element) || /^\d+(\.\d{1,2})?$/.test(value);
+            });//小數點後兩位內的數值
+
+
+            var rules = {};
+            var messages = {};
+
+            for (var i = 0; i < factoryCount; i++) {
+                for (var j = 0; j < 2; j++) {
+                    var TotalWorkHour = "TotalWorkHour[" + i + "][" + j + "]";
+
+                    rules[TotalWorkHour] = {
+                        min: 0,
+                        step: 0.01,
+                    };
+                    messages[TotalWorkHour] = {
+                        min: "請輸入大於0的數值",
+                        step: "請輸入小數點2位內的小數",
+                        number: "請輸入純數字"
+                    };
+
+
+                }
+            }
+            for (var i = 0; i < factoryCount; i++) {
+                for (var j = 0; j < 2; j++) {
+                    var DistributeRatio = "DistributeRatio[" + i + "][" + j + "]";
+
+                    rules[DistributeRatio] = {
+                        min: 0.01,
+                        max: 100,
+                        step: 0.01,
+                    };
+
+                    messages[DistributeRatio] = {
+                        min: "請輸入大於0的數值",
+                        max: "請輸入小於等於100的數值",
+                        step: "請輸入小數點2位內的小數",
+                        number: "請輸入純數字"
+                    };
+
+
+                }
+            }
+
+            $("#Workinghour").validate({
+                rules: rules,
+                messages: messages,
+                errorElement: 'div',
+                errorPlacement: function (error, element) {
+                    var placement = $(element).data('error');
+                    if (placement) {
+                        $(placement).append(error)
+                    } else {
+                        error.insertAfter(element);
+                    }
+                }
+            });
+        });
+        $(".exportExcel").on("click", function () {
+            ExportExcel();
+        });
+        $(".exportCSV").on("click", function () {
+            ExportCSV();
+        });
+        $(".exportJSON").on("click", function () {
+            ExportJSON();
+        });
+
+        $(".importExcel").on("click", function () {
+            ImportExcel();
+        });
+        $(".importCSV").on("click", function () {
+            ImportCSV();
+        });
+        $(".importJSON").on("click", function () {
+            ImportJSON();
+        });
+    </script>
+        }
+<style nonce="@nonce">
+    input[type="number"] {
+        width: 90%;
+    }
+
+    input[type="text"] {
+        width: 90%;
+    }
+
+    input[type="button"] {
+        width: 30%;
+    }
+
+    span {
+        color: red;
+    }
+</style>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-2">
+            <!-- 加入部分視圖，顯示左標題列 -->
+            @await Html.PartialAsync("Organize/Organize")
+        </div>
+        <div class="col-lg-10">
+            <div class="card">
+                <h3>工作時數</h3>
+
+                    <div style="margin: 10px 0;">
+                        <button class="genbtn exportExcel" value="">下載Excel範例</button>
+                        <button class="genbtn importExcel" value="">匯入Excel</button>
+                        <button class="genbtn exportCSV" value="">下載CSV範例</button>
+                        <button class="genbtn importCSV" value="">匯入CSV</button>
+                        <button class="genbtn exportJSON" value="">下載JSON範例</button>
+                        <button class="genbtn importJSON" value="">匯入JSON</button>
+                    </div>
+                
+                <form asp-action="Workinghour" id="Workinghour" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    @{
+                        int count = 0;
+                    }
+                    @foreach (var Factory in ViewBag.Factory)
+                    {
+
+                        <table style="width: 100%; border-collapse:collapse;" id="myTable" class="table-responsive fixed-table">
+                            <tr class="theadcolor">
+                                <th colsapn='8'>場域</th>
+                            </tr>
+                            <tr>
+                                <td colsapn='8'>
+                                    @Factory.Name
+                                </td>
+                            </tr>
+
+                            <tr class="theadcolor">
+                                <th>序</th>
+                                <th>項目</th>
+                                <th>總工時</th>
+                                <th>管理部門</th>
+                                <th>負責人員</th>
+                                <th>數據來源</th>
+                                <th>分配比率(%)</th>
+                                <th>佐證資料</th>
+                            </tr>
+                            <tr>
+                                <td>1</td>
+                                <td><span style='color: red;'>*</span>正式員工及約聘人員(具勞保)</td>
+                                <td><input type="number" step="0.01" name="TotalWorkHour[@count][0]" id="TotalWorkHour[@count][0]" value="@Model.Workinghours_Item_0[@count]?.TotalWorkHour" required title="請填寫總工時"></td>
+                                <td><input type="text" name="Management[@count][0]" id="Management[@count][0]" value="@Model.Workinghours_Item_0[@count]?.Management" required title="請填寫管理部門"></td>
+                                <td><input type="text" name="Principal[@count][0]" id="Principal[@count][0]" value="@Model.Workinghours_Item_0[@count]?.Principal" required title="請填寫負責人員"></td>
+                                <td><input type="text" name="Datasource[@count][0]" id="Datasource[@count][0]" value="@Model.Workinghours_Item_0[@count]?.Datasource" required title="請填寫數據來源"></td>
+                                <td><input type="number" step="0.01" name="DistributeRatio[@count][0]" id="DistributeRatio[@count][0]" value="@Model.Workinghours_Item_0[@count]?.DistributeRatio?.ToString("0.00")" required title="請填寫分配比率(%)"></td>
+                                <td><input class="btn btn-primary genbtn CallFileManage-btn" style="width:80%" type="button" value="檔案管理" data-id="@Model.Workinghours_Item_0[@count]?.Id" data-basicid="@ViewBag.basicid" data-title="正式員工及約聘人員(具勞保)" data-factory="@Factory.Name" /></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>廠商外派人員(不具勞保)</td>
+                                <td><input type="number" name="TotalWorkHour[@count][1]" id="TotalWorkHour[@count][1]" value="@Model.Workinghours_Item_1[@count]?.TotalWorkHour"></td>
+                                <td><input type="text" name="Management[@count][1]" id="Management[@count][1]" value="@Model.Workinghours_Item_1[@count]?.Management"></td>
+                                <td><input type="text" name="Principal[@count][1]" id="Principal[@count][1]" value="@Model.Workinghours_Item_1[@count]?.Principal"></td>
+                                <td><input type="text" name="Datasource[@count][1]" id="Datasource[@count][1]" value="@Model.Workinghours_Item_1[@count]?.Datasource"></td>
+                                <td><input type="number" step="0.01" name="DistributeRatio[@count][1]" id="DistributeRatio[@count][1]"  value="@Model.Workinghours_Item_1[@count]?.DistributeRatio?.ToString("0.00")"></td>
+                                <td><input class="btn btn-primary genbtn CallFileManage-btn" style="width:80%" type="button" value="檔案管理" data-id="@Model.Workinghours_Item_1[@count]?.Id" data-basicid="@ViewBag.basicid" data-title="廠商外派人員(不具勞保)" data-factory="@Factory.Name" /></td>
+                            </tr>
+                        </table>
+                        <br />
+                        <hr />
+                        <br />
+                        count++;
+                    }
+                    <br />
+                    <div class="form-group textcenter">
+                        <input id="submitBtn" type="submit" value="存檔" class="btn btn-primary genbtn" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

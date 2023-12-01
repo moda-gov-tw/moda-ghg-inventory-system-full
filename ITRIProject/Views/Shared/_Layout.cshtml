@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+@{
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" sizes="16x16" href="~/Img/Moda.ico">
+    <title>GHG-數位產業自願性溫室氣體盤查系統</title>
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/magnific-popup.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/magnific-popup/magnific-popup.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid-theme.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid-theme.min.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiColor.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiLayout.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiRWD.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+
+    <style nonce="@nonce">
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .site-content {
+            min-height: 100vh; /* 使用視窗高度作為最小高度 */
+            margin-bottom: -50px; /* 扣除 footer 的高度 */
+        }
+
+        .circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: red;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .circle span {
+            color: white;
+        }
+        head_div{
+            margin-right: 30px;
+            flex-grow: 0;
+        }
+    </style>
+</head>
+<body class='padding-150'>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                @if (Context.Session.GetString("Permissions") == "1")
+                {
+                    <a class="navbar-brand" asp-area="" asp-controller="MemberMangment" asp-action="index"><img src='/Img/logo.png'></a>
+                }
+                else
+                {
+                    <a class="navbar-brand" asp-area="" asp-controller="Organize" asp-action="Details"><img src='/Img/logo.png'></a>
+                }
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between textright head_div" style="margin-right: 30px; flex-grow:0">
+                    <div class='font_set'>
+                        <button id="smallFont">A-</button>
+                        <button id="mediumFont">A</button>
+                        <button id="largeFont">A+</button>
+                    </div>
+                    <ul class="navbar-nav  ml-auto">
+
+                        @if (Context.Session.GetString("Permissions") == "0" || Context.Session.GetString("Permissions") == "1")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Organize" asp-action="Details">盤查表</a>
+                            </li>
+                        }
+                        @if (Context.Session.GetString("Permissions") == "1" )
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Coefficient" asp-action="EnergyUse">係數設定</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="MemberMangment" asp-action="index">會員管理</a>
+                            </li>
+                        }
+
+                        <li class="nav-item dropdown">
+
+                            <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @if (Context.Session.GetString("Account") != null)
+                                {
+
+                                    <label id="MemberText">
+                                        @Context.Session.GetString("name") @Context.Session.GetString("Account")
+                                    </label>
+                                    @*                                     <label class="circle"><span>1</span></label>
+                                *@                                }
+                                else
+                                {
+                                    <label>
+                                        會員資料
+                                    </label>
+                                }
+                            </a>
+                            @if (Context.Session.GetString("AccountId") == null && Context.Request.Path != "/Member/ModaLogin" && Context.Request.Path != "/Member/Logout" && Context.Request.Path != "/Member/Login" && Context.Request.Path != "/Member/Register" && Context.Request.Path != "" && Context.Request.Path != "/Member/ForgetPwd")
+                            {
+                                <script nonce="@nonce">
+                                    alert("請先登入");
+                                    window.location.href = "/Member/Login";
+                                </script>
+                            }
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                @if (Context.Session.GetString("AccountId") == null)
+                                {
+                                    <li><a class="dropdown-item" href="/Member/Login">登入</a></li>
+                                    <li><a class="dropdown-item" href="/Member/Register">註冊</a></li>
+                                }
+                                else
+                                {
+                                    <li><a class="dropdown-item" href="/Member/Member">會員基本資料</a></li>
+                                    <li><a class="dropdown-item" href="/Member/EditPassword">修改密碼</a></li>
+                                    <li><a class="dropdown-item" href="/Member/Logout">登出</a></li>
+                                }
+
+                            </ul>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="site-content">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    @*    <footer class="border-top footer text-muted">
+    <div class="container">
+    &copy; 2023 - ITRIProject - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    </div>
+    </footer>*@
+
+
+    <script nonce="@nonce" src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script nonce="@nonce" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script nonce="@nonce" src="~/js/site.js" asp-append-version="true"></script>
+    <script nonce="@nonce" src="~/js/site1.js" asp-append-version="true"></script>
+    <script nonce="@nonce" charset="utf-8" src="~/js/Organize.js" asp-append-version="true"></script>
+
+    <script nonce="@nonce" src="~/js/OutputExcel.js" asp-append-version="true"></script>
+    <script nonce="@nonce" src="~/js/OutputCsv.js" asp-append-version="true"></script>
+    <script nonce="@nonce" src="~/js/OutputJson.js" asp-append-version="true"></script>
+    @*      <script src="~/js//tabletoxlsx.js"></script> *@
+    <script nonce="@nonce" src="~/js/exceljs.min.js"></script>
+    <script nonce="@nonce" src="~/js/table2excel.core.js"></script>
+    <script nonce="@nonce" src="~/lib/echarts/echarts.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/magnific-popup/jquery.magnific-popup.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/magnific-popup/init-magnificPopup.js"></script>
+
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid.min.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid-fr.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/layer/layer.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script nonce="@nonce">
+        var OriginalMemberText;//保留初始文字，SignoffNotify裡面呼叫
+        var OriginalSignoffNotifyText;
+        OriginalMemberText = document.getElementById("MemberText").innerHTML;
+        OriginalSignoffNotifyText = document.getElementById("SignoffNotifyText").innerHTML;
+        $.ajax({
+            url: "/Signoff/SignoffNotifyNum",
+            type: "POST",
+            dataType: "json",
+            success: function (response) {
+                if (response.success) {
+                    if (response.signoffnotifynum != 0) {
+                        document.getElementById("MemberText").innerHTML += '<label class="circle"><span>' + response.signoffnotifynum + '</span></label>';
+                        document.getElementById("SignoffNotifyText").innerHTML += '<label class="circle"><span>' + response.signoffnotifynum + '</span></label>';
+                    }
+                    } else {
+                        alert(response.error);
+                    }
+                },
+            });
+        var forms = document.getElementsByTagName('form');
+
+        for (var i = 0; i < forms.length; i++) {
+            forms[i].autocomplete = 'off';
+        }
+
+        var inputs = document.getElementsByTagName('input');
+
+        for (var i = 0; i < inputs.length; i++) {
+            inputs[i].autocomplete = 'off';
+        }
+        
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

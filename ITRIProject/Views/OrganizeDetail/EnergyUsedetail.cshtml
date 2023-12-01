@@ -1,0 +1,1384 @@
+﻿    @model ITRIProject.Models.View.EnergyUsedetail
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    Layout = null;
+    Layout = "~/Views/Shared/Organize/_Organizedetail.cshtml";
+    int monthcount = ViewBag.monthcount;
+    int year = ViewBag.year - 1911;
+    int month = ViewBag.month;
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+
+@section Scripts{
+    <script nonce="@nonce" src="~/js/site1.js" asp-append-version="true"></script>
+    <script nonce="@nonce">
+        $(function () {
+            var EvidenceFile = @Html.Raw(Json.Serialize(ViewBag.EvidenceFile));//佐證資料
+            $("#EnergyUsedetail").validate({//驗證
+
+                rules: {
+                    //EvidenceFile: {
+                    //    required: function (element) {
+                    //        // 檢查是否有檔案，沒檔案則必傳
+                    //        return EvidenceFile === null;
+                    //    }
+                    //},
+                },
+                //設定必填時，沒填寫跳出的訊息
+                messages: {
+                    StartLocation: "請輸入起點",
+                    EndLocation: "請輸入迄點",
+                    Car: "請輸入車種",
+                    Tonnes: "請輸入噸數",
+                    Fuel: "請輸入燃料",
+                    Land: "請輸入陸運(km)",
+                    Sea: "請輸入海運(km)",
+                    Air: "請輸入空運(km)",
+                    EvidenceFile: "請上傳佐證資料",
+
+                },
+                //給予沒填寫資料error
+                errorElement: 'div',
+                errorPlacement: function (error, element) {
+                    var placement = $(element).data('error');
+                    if (placement) {
+                        $(placement).append(error)
+                    } else {
+                        error.insertAfter(element);
+                    }
+                }
+            });
+        });
+
+        // StartTime自动加1带值
+
+        const queryString = window.location.search;//抓取網址?後面的值
+        const urlParams = new URLSearchParams(queryString);//URLSearchParams 对象提供的方法来操作查询参数，如get
+        const basicid = urlParams.get('BasicId');//抓取basicid
+        const id = urlParams.get('id');//抓取id
+        var energyname = urlParams.get("energyname");
+        // 获取select元素
+        var selectElement = document.getElementById("Method");
+
+
+        // 在控制台上輸出id，以驗證是否成功抓取到id
+        $(document).ready(function () {
+            $("#EnergyUsedetail").submit(function (event) {//提交事件
+                event.preventDefault(); // 防止表單的預設提交行為
+
+                if (energyname === "1" && selectElement.value != "61") {
+                    alert("能源名稱為：電力，運輸方式應為：管線");
+                    return;
+                }
+                var radios = document.getElementsByName('SelMonth');
+                var radiosResult;
+                for (var i = 0; i < radios.length; i++) {
+                    if (radios[i].checked) {
+                        radiosResult = radios[i].value;
+                        break;
+                    }
+                }
+                if (radiosResult == "TwoMonth") {
+                    TwoMonthsumtotal();
+                }
+                else {
+                    sumtotal();//提交再做一次加總
+                }
+                const errorInputs = document.querySelectorAll('.dayerror');
+                if (errorInputs.length > 0) {//日期只要有一個不正確就跳alert
+                    event.preventDefault(); // 阻止表单的默认提交行为
+                    alert('日期填寫有誤');
+                    return;
+                }
+                //有數值時，必須有開始與結束日期
+                let YearMonthVerify = true;
+
+                for (i = 0; i < @monthcount + 1; i++) {
+                    let numInputValid = $(`#Num\\[${i}\\]`).val();
+                    let startTimeInputValid = $(`#StartTime\\[${i}\\]`).val();
+                    let endTimeInputValid = $(`#EndTime\\[${i}\\]`).val();
+
+                    if (numInputValid !== "" && (startTimeInputValid === "" || endTimeInputValid === "")) {
+                        event.preventDefault(); // 阻止表單提交
+
+                        let errorMsg = `請填寫開始及結束時間。`;
+
+                        // 將錯誤消息添加到相應的元素中
+                        let placement = $(`#Num\\[${i}\\]`).data('error');
+                        if (placement) {
+                            $(placement).append(`<div class="error">${errorMsg}</div>`);
+                        } else {
+                            $(`#Num\\[${i}\\]`).after(`<div class="error">${errorMsg}</div>`);
+                        }
+                        YearMonthVerify = false; //加入錯誤
+                    }
+
+
+                }
+                //錯誤統一return
+                if (YearMonthVerify === false) {
+                    return;
+                }
+
+                //有數值時，必須有開始與結束日期
+                //let managementVerify = true;
+                //let principalVerify = true
+                //let datasourceVerify = true;
+
+                //let managementValid = $(`#management]`).val();
+                //let PrincipalValid = $(`#Principal]`).val();
+                //let DatasourceValid = $(`#Datasource]`).val();
+                //if (managementValid !== "" ) {
+                //    event.preventDefault();  阻止表單提交
+
+                //    let errorMsg = `請填寫管理單位。`;
+
+                //     將錯誤消息添加到相應的元素中
+                //    let placement = $(`#management]`).data('error');
+                //    if (placement) {
+                //        $(placement).append(`<div class="error">${errorMsg}</div>`);
+                //    } else {
+                //        $(`#management]`).after(`<div class="error">${errorMsg}</div>`);
+                //    }
+                //    managementVerify = false; 加入錯誤
+                //}
+                //錯誤統一return
+                //if (managementVerify === false) {
+                //    return;
+                //}
+
+
+                var isValid = $("#EnergyUsedetail").validate().form();//檢查必填欄位是否都有填，沒有則跳出
+                if (!isValid) {
+                    return false;
+                }
+                //提交時一運輸方式設定必填欄位
+                //var selectedValue = $("#Method").val();
+                //if (selectedValue === "58") {
+                //    // 修改表单验证规则
+                //    $("#EnergyUsedetail").validate().settings.rules.StartLocation = null;
+                //    $("#EnergyUsedetail").validate().settings.rules.EndLocation = null;
+                //    $("#EnergyUsedetail").validate().settings.rules.Car = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Tonnes = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Fuel = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Land = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Sea = null;
+                //    $("#EnergyUsedetail").validate().settings.rules.Air = null;
+                //}
+                ////海運
+                //else if (selectedValue === "59") {
+                //    $("#EnergyUsedetail").validate().settings.rules.StartLocation = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.EndLocation = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Car = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Tonnes = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Fuel = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Land = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Sea = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Air = null;
+                //}
+                ////空運
+                //else if (selectedValue === "60") {
+                //    $("#EnergyUsedetail").validate().settings.rules.StartLocation = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.EndLocation = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Car = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Tonnes = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Fuel = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Land = "required";
+                //    $("#EnergyUsedetail").validate().settings.rules.Sea = null;
+                //    $("#EnergyUsedetail").validate().settings.rules.Air = "required";
+                //}
+                //else {
+                //    $("#EnergyUsedetail").validate().settings.rules = null;
+
+                //}
+                ////有未輸入時，跳出
+                //var isValid = $("#EnergyUsedetail").validate().form();
+                //if (!isValid) {
+                //    return false;
+                //}
+
+                var formData = new FormData($(this)[0]); // 將整個表單數據轉換為 FormData
+
+
+                //var EvidenceFile = $("#EvidenceFile").get(0).files[0];//抓取檔案
+                //formData.append("EvidenceFile", EvidenceFile);//檔案加進去formData陣列
+                $.ajax({
+                    url: "/OrganizeDetail/EnergyUsedetail/" + id,//傳入後端
+                    type: "POST",
+                    data: formData, // 將表單數據傳遞到後端
+                    processData: false,
+                    contentType: false,
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.nologin) {
+                            alert("請先登入")
+                            window.close();
+                        }
+                        else if (response.success) {
+                            // 後端回傳success時，關閉彈跳視窗，回到能源使用頁面
+                            window.close();
+                        } else {
+                            // 登入失敗，處理錯誤回應
+                            alert(response.error);
+                        }
+                    },
+
+                });
+
+
+            });
+        });
+        //總量加總
+        let total = 0;
+        function sumtotal(inputElement) {
+            let numInputs = document.querySelectorAll('input[name^="Num"]');//數值欄位
+            let DateTime = document.querySelectorAll('input[name^="DateTimes"]');//系統帶出的日期
+            let StartTime = document.querySelectorAll('input[name^="StartTime"]');//開始日期欄位
+            let EndTime = document.querySelectorAll('input[name^="EndTime"]');//結束日期欄位
+            total = 0; // 重置 total 为 0
+            for (let i = 0; i < numInputs.length; i++) {
+                let last = numInputs.length - 1;//最後一筆
+                let value = parseFloat(numInputs[i].value);//numInputs的值轉為float
+                if (!isNaN(value)) {
+                    //第一筆做運算
+                    if (i == 0) {
+                        let DateTimeparts = DateTime[i].value.split('/');//第0筆以 / 切分為年月
+                        let StartTimeparts = StartTime[i].value.split('/');//開始時間以 / 切分為年月日
+                        let EndTimeparts = EndTime[i].value.split('/');//結束時間以 / 切分為年月日
+
+                        //開始時間總天數
+                        let Smonth = (DateTimeparts[0] - StartTimeparts[0]) * 12 + (DateTimeparts[1] - StartTimeparts[1]);//相差月份
+                        let SDayTotal = 0;//重置開始天數
+                        let StartMonth = StartTimeparts[1];//StartTime月份
+                        if (Smonth + 1 > 0) {//有值再跑
+                            for (let i = 0; i < (Smonth + 1); i++) {//for迴圈跑相差多少月份
+                                SDayTotal += getDaysInMonth(StartMonth, StartTimeparts[0]);//開始天數累加，getDaysInMonth抓取該月天數
+                                StartMonth++;//開始月份累加
+
+                                if (StartMonth > 12) {//月份超過12個月時，月份從1開始，年分加1
+                                    StartMonth = 1;
+                                    StartTimeparts[0]++;
+                                }
+                            }
+                            SDayTotal -= (StartTimeparts[2] - 1);//開始天數，減去實際開始天數，5/13，SDayTotal-= (13-1)
+                        }
+                        console.log("SDayTotal：" + SDayTotal);
+
+                        //結束時間總天數
+
+                        let Emonth = (EndTimeparts[0] - DateTimeparts[0]) * 12 + (EndTimeparts[1] - DateTimeparts[1]);//相差月份
+                        if (Emonth >= numInputs.length) {//設定第一筆的結束時間不能大於整個盤查區間
+                            EndTime[i].classList.add('dayerror')
+                            alert("帳單日期大於盤查區間")
+                        }
+                        let EDayTotal = 0;//重置結束天數
+                        let EndMonth = EndTimeparts[1];//結束月份
+                        if (Emonth > 0) {//有值再跑
+                            for (let i = 0; i < (Emonth - 1); i++) {//for迴圈跑相差多少月份，排除填寫的月份
+                                EndMonth--;//結束時間7/13，則從6月開始累加
+                                if (EndMonth < 1) {//月份超過12個月時，月份從1開始，年分加1
+                                    EndMonth = 12;
+                                    EndTimeparts[0]--;
+                                }
+                                EDayTotal += getDaysInMonth(EndMonth, EndTimeparts[0]);
+
+                            }
+                            EDayTotal += parseInt(EndTimeparts[2]);//加上排除月份的天數
+                        }
+                        console.log("EDayTotal：" + EDayTotal);
+                        total += parseFloat((value * EDayTotal / (EDayTotal + SDayTotal)).toFixed(2));//數值*EDayTotal佔的比例，小數點2位
+
+                    }
+                    //最後一筆做運算
+                    else if (i == numInputs.length - 1) {
+                        let DateTimeparts = DateTime[last].value.split('/');//最後一筆筆以 / 切分為年月
+                        let StartTimeparts = StartTime[last].value.split('/');//最後一筆筆以 / 切分為年月日
+                        let EndTimeparts = EndTime[last].value.split('/');//最後一筆筆以 / 切分為年月日
+
+
+                        //開始時間總天數
+                        let Smonth = (DateTimeparts[0] - StartTimeparts[0]) * 12 + (DateTimeparts[1] - StartTimeparts[1]);//相差月份
+
+                        if (Smonth >= numInputs.length) {
+                            StartTime[i].classList.add('dayerror')//設定第最後一筆的開始時間不能小於整個盤查區間
+                            alert("帳單日期小於盤查區間")
+                        }
+                        let SDayTotal = 0;
+                        let StartMonth = StartTimeparts[1];//StartMonth月份
+                        if ((Smonth + 1) > 0) {//for迴圈跑相差多少月份
+                            for (let i = 0; i < (Smonth + 1); i++) {
+                                SDayTotal += getDaysInMonth(StartMonth, StartTimeparts[0]);//開始天數累加，getDaysInMonth抓取該月天數
+                                StartMonth -= 1;
+                                if (StartMonth > 12) {//月份超過12個月時，月份從1開始，年分加1
+                                    StartMonth = 1;
+                                    StartTimeparts[0]++;
+                                }
+                            }
+                            SDayTotal -= (StartTimeparts[2] - 1);
+                        }
+                        console.log("SDayTotallast：" + SDayTotal);
+                        //結束時間總天數
+
+                        let Emonth = (EndTimeparts[0] - DateTimeparts[0]) * 12 + (EndTimeparts[1] - DateTimeparts[1]);//相差月份
+                        let EDayTotal = 0;
+                        let EndMonth = EndTimeparts[1];
+
+                        if (Emonth > 0) {//有值再跑
+                            for (let i = 0; i < (Emonth - 1); i++) {//for迴圈跑相差多少月份，排除填寫的月份
+                                EndMonth--;//結束時間7/13，則從6月開始累加
+                                if (EndMonth < 1) {//月份超過12個月時，月份從1開始，年分加1
+                                    EndMonth = 12;
+                                    EndTimeparts[0]--;
+                                }
+                                EDayTotal += getDaysInMonth(EndMonth, EndTimeparts[0]);
+
+                            }
+                            EDayTotal += parseInt(EndTimeparts[2]);//加上排除月份的天數
+                        }
+                        console.log("EDayTotallast：" + EDayTotal);
+                        total += parseFloat((value * SDayTotal / (EDayTotal + SDayTotal)).toFixed(2));//數值*SDayTotal佔的比例，小數點2位
+
+                    }
+                    else {
+                        total += value;
+
+                    }
+                }
+            }
+            $('#TotalNum').val(total.toFixed(2));//總量小數點兩位
+        }
+        //總量加總
+        total = 0;
+        function TwoMonthsumtotal(inputElement) {
+            let numInputs = document.querySelectorAll('input[name^="Num"]');//數值欄位
+            let DateTime = document.querySelectorAll('input[name^="DateTimes"]');//系統帶出的日期
+            let StartTime = document.querySelectorAll('input[name^="StartTime"]');//開始日期欄位
+            let EndTime = document.querySelectorAll('input[name^="EndTime"]');//結束日期欄位
+            total = 0; // 重置 total 为 0
+            for (let i = 0; i < numInputs.length; i++) {
+                let last = numInputs.length - 1;//最後一筆
+                let value = parseFloat(numInputs[i].value);//numInputs的值轉為float
+                if (!isNaN(value)) {
+                    //第一筆做運算
+                    if (i == 0) {
+                        let DateTimeparts = DateTime[i].value.split('/');//第0筆以 / 切分為年月
+                        let StartTimeparts = StartTime[i].value.split('/');//開始時間以 / 切分為年月日
+                        let EndTimeparts = EndTime[i].value.split('/');//結束時間以 / 切分為年月日
+
+                        //開始時間總天數
+                        let Smonth = ((@ViewBag.year-1911) - StartTimeparts[0]) * 12 + (@ViewBag.month - StartTimeparts[1]);//相差月份
+                        let SDayTotal = 0;//重置開始天數
+                        let StartMonth = StartTimeparts[1];//StartTime月份
+                        if (Smonth > 0) {//有值再跑
+                            for (let i = 0; i < (Smonth); i++) {//for迴圈跑相差多少月份
+                                SDayTotal += getDaysInMonth(StartMonth, StartTimeparts[0]);//開始天數累加，getDaysInMonth抓取該月天數
+                                StartMonth++;//開始月份累加
+
+                                if (StartMonth > 12) {//月份超過12個月時，月份從1開始，年分加1
+                                    StartMonth = 1;
+                                    StartTimeparts[0]++;
+                                }
+                            }
+                            SDayTotal -= (StartTimeparts[2] - 1);//開始天數，減去實際開始天數，5/13，SDayTotal-= (13-1)
+                        }
+                        console.log("SDayTotal：" + SDayTotal);
+
+                        //結束時間總天數
+
+                        let Emonth = (EndTimeparts[0] - (@ViewBag.year-1911)) * 12 + (EndTimeparts[1] - @ViewBag.month +1);//相差月份
+                        console.log("sm:" + Emonth)
+
+                        if (Emonth >= numInputs.length) {//設定第一筆的結束時間不能大於整個盤查區間
+                            EndTime[i].classList.add('dayerror')
+                            alert("帳單日期大於盤查區間")
+                        }
+                        let EDayTotal = 0;//重置結束天數
+                        let EndMonth = EndTimeparts[1];//結束月份
+                        if (Emonth > 0) {//有值再跑
+                            for (let i = 0; i < (Emonth - 1); i++) {//for迴圈跑相差多少月份，排除填寫的月份
+                                EndMonth--;//結束時間7/13，則從6月開始累加
+                                if (EndMonth < 1) {//月份超過12個月時，月份從1開始，年分加1
+                                    EndMonth = 12;
+                                    EndTimeparts[0]--;
+                                }
+                                EDayTotal += getDaysInMonth(EndMonth, EndTimeparts[0]);
+
+                            }
+                            EDayTotal += parseInt(EndTimeparts[2]);//加上排除月份的天數
+                        }
+                        console.log("EDayTotal：" + EDayTotal);
+                        total += parseFloat((value * EDayTotal / (EDayTotal + SDayTotal)).toFixed(2));//數值*EDayTotal佔的比例，小數點2位
+
+                    }
+                    //最後一筆做運算
+                    else if (i == numInputs.length - 1) {
+                        let DateTimeparts = DateTime[last].value.split('/');//最後一筆筆以 / 切分為年月
+                        let StartTimeparts = StartTime[last].value.split('/');//最後一筆筆以 / 切分為年月日
+                        let EndTimeparts = EndTime[last].value.split('/');//最後一筆筆以 / 切分為年月日
+
+
+                        //開始時間總天數
+                        let Smonth = ((@ViewBag.EndYear-1911) - StartTimeparts[0]) * 12 + (@ViewBag.EndMonth - StartTimeparts[1]);//相差月份
+
+                        if (Smonth >= numInputs.length) {
+                            StartTime[i].classList.add('dayerror')//設定第最後一筆的開始時間不能小於整個盤查區間
+                            alert("帳單日期小於盤查區間")
+                        }
+                        let SDayTotal = 0;
+                        let StartMonth = StartTimeparts[1];//StartMonth月份
+                        if ((Smonth + 1) > 0) {//for迴圈跑相差多少月份
+                            for (let i = 0; i < (Smonth + 1); i++) {
+                                SDayTotal += getDaysInMonth(StartMonth, StartTimeparts[0]);//開始天數累加，getDaysInMonth抓取該月天數
+                                StartMonth -= 1;
+                                if (StartMonth > 12) {//月份超過12個月時，月份從1開始，年分加1
+                                    StartMonth = 1;
+                                    StartTimeparts[0]++;
+                                }
+                            }
+                            SDayTotal -= (StartTimeparts[2] - 1);
+                        }
+                        console.log("SDayTotallast：" + SDayTotal);
+                        //結束時間總天數
+
+                        let Emonth = (EndTimeparts[0] - (@ViewBag.EndYear-1911)) * 12 + (EndTimeparts[1] - @ViewBag.EndMonth);//相差月份
+                        let EDayTotal = 0;
+                        let EndMonth = EndTimeparts[1];
+
+                        if (Emonth > 0) {//有值再跑
+                            for (let i = 0; i < (Emonth - 1); i++) {//for迴圈跑相差多少月份，排除填寫的月份
+                                EndMonth--;//結束時間7/13，則從6月開始累加
+                                if (EndMonth < 1) {//月份超過12個月時，月份從1開始，年分加1
+                                    EndMonth = 12;
+                                    EndTimeparts[0]--;
+                                }
+                                EDayTotal += getDaysInMonth(EndMonth, EndTimeparts[0]);
+
+                            }
+                            EDayTotal += parseInt(EndTimeparts[2]);//加上排除月份的天數
+                        }
+                        console.log("EDayTotallast：" + EDayTotal);
+                        total += parseFloat((value * SDayTotal / (EDayTotal + SDayTotal)).toFixed(2));//數值*SDayTotal佔的比例，小數點2位
+
+                    }
+                    else {
+                        total += value;
+
+                    }
+                }
+            }
+            $('#TotalNum').val(total.toFixed(2));//總量小數點兩位
+        }
+
+        //判斷目前運輸方式選取哪個，則顯示哪些資料，value為58~62，陸、海、空、管線、其他
+        $(document).ready(function () {
+            if ('@Model.SelMonth?.Num' === "TwoMonth") {
+                $("#OneMonthTable").hide(); // 隐藏表格
+                $("#OneMonthTable input , #OneMonthTable select").prop("name", null).prop("id", null);
+
+                $("#TwoMonthTable").show(); // 隐藏表格
+                $("#TwoMonthTable input, #TwoMonthTable select").each(function () {
+                    var originalName = $(this).data("twomonthtable-name");
+                    var originalId = $(this).data("twomonthtable-id");
+
+                    if (originalName) {
+                        $(this).prop("name", originalName);
+                    }
+
+                    if (originalId) {
+                        $(this).prop("id", originalId);
+                    }
+                });
+                TwoMonthsumtotal()
+            }
+            else {
+                $("#TwoMonthTable input, #TwoMonthTable select").prop("name", null).prop("id", null);
+                sumtotal();
+            }
+            //sumtotal();//載入就加總
+            //TwoMonthsumtotal();
+            //依仔入就先判斷哪些該開啟，那些該關閉
+            var selectedValue = $("#Method").val();
+            if (selectedValue === "58") {
+                $("#StartLocation").hide();
+                $("#EndLocation").hide();
+                $("#Car").show();
+                $("#Tonnes").show();
+                $("#Fuel").show();
+                $("#Land").show();
+                $("#Sea").hide();
+                $("#Air").hide();
+            } else if (selectedValue === "59") {
+                $("#StartLocation").show();
+                $("#EndLocation").show();
+                $("#Car").show();
+                $("#Tonnes").show();
+                $("#Fuel").show();
+                $("#Land").show();
+                $("#Sea").show();
+                $("#Air").hide();
+            } else if (selectedValue === "60") {
+                $("#StartLocation").show();
+                $("#EndLocation").show();
+                $("#Car").show();
+                $("#Tonnes").show();
+                $("#Fuel").show();
+                $("#Land").show();
+                $("#Sea").hide();
+                $("#Air").show();
+            } else if (selectedValue === "61") {
+                $("#StartLocation").hide();
+                $("#EndLocation").hide();
+                $("#Car").hide();
+                $("#Tonnes").hide();
+                $("#Fuel").hide();
+                $("#Land").hide();
+                $("#Sea").hide();
+                $("#Air").hide();
+            } else if (selectedValue === "62") {
+                $("#StartLocation").hide();
+                $("#EndLocation").hide();
+                $("#Car").hide();
+                $("#Tonnes").hide();
+                $("#Fuel").hide();
+                $("#Land").hide();
+                $("#Sea").hide();
+                $("#Air").hide();
+            }
+            //下拉式選單監聽
+            $("#Method").change(function () {
+                var selectedValue = $(this).val();
+                if (selectedValue === "58") {
+                    $("#StartLocation").hide();
+                    $("#EndLocation").hide();
+                    $("#Car").show();
+                    $("#Tonnes").show();
+                    $("#Fuel").show();
+                    $("#Land").show();
+                    $("#Sea").hide();
+                    $("#Air").hide();
+
+                } else if (selectedValue === "59") {
+                    $("#StartLocation").show();
+                    $("#EndLocation").show();
+                    $("#Car").show();
+                    $("#Tonnes").show();
+                    $("#Fuel").show();
+                    $("#Land").show();
+                    $("#Sea").show();
+                    $("#Air").hide();
+                } else if (selectedValue === "60") {
+                    $("#StartLocation").show();
+                    $("#EndLocation").show();
+                    $("#Car").show();
+                    $("#Tonnes").show();
+                    $("#Fuel").show();
+                    $("#Land").show();
+                    $("#Sea").hide();
+                    $("#Air").show();
+                } else if (selectedValue === "61") {
+                    $("#StartLocation").hide();
+                    $("#EndLocation").hide();
+                    $("#Car").hide();
+                    $("#Tonnes").hide();
+                    $("#Fuel").hide();
+                    $("#Land").hide();
+                    $("#Sea").hide();
+                    $("#Air").hide();
+                } else if (selectedValue === "62") {
+                    $("#StartLocation").hide();
+                    $("#EndLocation").hide();
+                    $("#Car").hide();
+                    $("#Tonnes").hide();
+                    $("#Fuel").hide();
+                    $("#Land").hide();
+                    $("#Sea").hide();
+                    $("#Air").hide();
+                }
+            });
+        });
+        // 获取当前页面的完整 URL
+
+        if (energyname === "1") {
+            selectElement.value = "61";
+
+        }
+        // 设置默认选项为 "管線"
+        // 监听收音机选项变化
+        $("input[name='SelMonth']").change(function () {
+            if ($(this).val() === "TwoMonth") {
+                $("#OneMonthTable").hide(); // 隐藏表格
+                $("#OneMonthTable input,#OneMonthTable select").prop("name", null).prop("id", null);
+                $("#TwoMonthTable").show(); // 隐藏表格
+                $("#TwoMonthTable input,#TwoMonthTable select").each(function () {
+                    var originalName = $(this).data("twomonthtable-name");
+                    var originalId = $(this).data("twomonthtable-id");
+
+                    if (originalName) {
+                        $(this).prop("name", originalName);
+                    }
+
+                    if (originalId) {
+                        $(this).prop("id", originalId);
+                    }
+                });
+            } else {
+                $("#TwoMonthTable input,#TwoMonthTable select").prop("name", null).prop("id", null);
+                $("#TwoMonthTable").hide(); // 隐藏表格
+                $("#OneMonthTable").show(); // 显示表格
+                $("#OneMonthTable input,#OneMonthTable select").each(function () {
+                    var originalName = $(this).data("onemonthtable-name");
+                    var originalId = $(this).data("onemonthtable-id");
+
+                    if (originalName) {
+                        $(this).prop("name", originalName);
+                    }
+
+                    if (originalId) {
+                        $(this).prop("id", originalId);
+                    }
+                });
+            }
+        });
+
+    </script>
+}
+<style nonce="@nonce">
+    .table-container {
+        width: 100%; /* 表格宽度为100% */
+        overflow-x: auto; /* 水平滚动条 */
+    }
+
+    /* 当屏幕宽度小于某个阈值时，给内容容器添加最小宽度 */
+    @@media (max-width: 1600px) {
+        .table-container {
+            min-width: 1600px; /* 设置最小宽度 */
+            overflow-x: auto; /* 水平滚动条 */
+        }
+    }
+    span{
+        color:red;
+    }
+</style>
+<form asp-action="EnergyUsedetail" id="EnergyUsedetail">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="table-container">
+        <table border="1" style="width:100%; border-collapse:collapse;" id="myTable" class="table-responsive fixed-table ">
+            <tr class="theadcolor">
+                <th rowspan="2">運送方式</th>
+                <th colspan="2">海運/空運 起迄 港口/機場</th>
+                <th colspan="3">陸運運輸資訊說明</th>
+                <th colspan="3">運輸距離</th>
+            </tr>
+            <tr class="theadcolor">
+                <th>起點</th>
+                <th>迄點</th>
+                <th>車種</th>
+                <th>噸數</th>
+                <th>燃料</th>
+                <th>陸運(km)</th>
+                <th>海運(km)</th>
+                <th>空運(km)</th>
+
+            </tr>
+            <tr class="theadcolor">
+                <td>
+                    <select name="Method" id="Method" style="width:100%;height:100%">
+                        @foreach (var a in ViewBag.Method)//運送方法
+                        {
+                            if (Model.DTransportation?.Method == a.Code)//有值預設該值selected
+                            {
+                                <option value="@a.Code" selected>@a.Name</option>
+
+                            }
+                            else
+                            {
+                                <option value="@a.Code">@a.Name</option>
+
+                            }
+                        }
+                    </select>
+                </td>
+                <td><input type="text" name="StartLocation" id="StartLocation" value="@Model.DTransportation?.StartLocation"></td>
+                <td><input type="text" name="EndLocation" id="EndLocation" value="@Model.DTransportation?.EndLocation"></td>
+                <td>
+                    <select name="Car" id="Car" style="width:100%;height:100%">
+                        @foreach (var a in ViewBag.Car)//車種
+                        {
+                            if (Model.DTransportation?.Car == a.Code)
+                            {
+                                <option value="@a.Code" selected>@a.Name</option>
+
+                            }
+                            else
+                            {
+                                <option value="@a.Code">@a.Name</option>
+
+                            }
+                        }
+                    </select>
+                </td>
+                <td><input type="number" name="Tonnes" id="Tonnes" value="@Model.DTransportation?.Tonnes"></td>
+                <td><input type="text" name="Fuel" id="Fuel" value="@Model.DTransportation?.Fuel"></td>
+                <td><input type="number" name="Land" id="Land" value="@Model.DTransportation?.Land"></td>
+                <td><input type="number" name="Sea" id="Sea" value="@Model.DTransportation?.Sea"></td>
+                <td><input type="number" name="Air" id="Air" value="@Model.DTransportation?.Air"></td>
+            </tr>
+        </table>
+
+        <br />
+        <label>
+            @if (Model.SelMonth?.Num == "TwoMonth")
+            {
+                <label>
+                    <input type="radio" name="SelMonth" value="OneMonth">1個月
+                    <input type="radio" name="SelMonth" value="TwoMonth" checked>2個月
+                </label>
+            }
+            else
+            {
+                <label>
+                    <input type="radio" name="SelMonth" value="OneMonth" checked>1個月
+                    <input type="radio" name="SelMonth" value="TwoMonth">2個月
+                </label>
+            }
+        </label>
+        <table border="1" style="width: 100%; border-collapse:collapse;" id="OneMonthTable" class="table-responsive fixed-table">
+            <tr class="theadcolor">
+                <th colspan="2">年/月</th>
+                @for (int i = 0; i < monthcount + 1; i++)
+                {
+                    //第一筆月份減1，如果等於0則為前一年12月
+                    if (i == 0)
+                    {
+                        if (month - 1 == 0)
+                        {
+                            <th><input type="text" name="DateTimes" value="@(year-1) / 12" readonly style="border: none; background-color: transparent; outline: none; cursor: default;" data-onemonthtable-name="DateTimes" /></th>
+
+                        }
+                        else
+                        {
+                            <th><input type="text" name="DateTimes" value="@year / @(month-1)" readonly style="border: none; background-color: transparent; outline: none; cursor: default;" data-onemonthtable-name="DateTimes" /></th>
+
+                        }
+                    }
+                    else
+                    {
+                        //如果月份大於12年分加1，月份從1開始
+                        if (month > 12)
+                        {
+                            year += 1;
+                            month = 1;
+                        }
+
+                        <th>
+                            <input type="text" name="DateTimes" value="@year / @month" readonly style="border: none; background-color: transparent; outline: none; cursor: default;" data-onemonthtable-name="DateTimes" />
+                        </th>
+
+
+
+                        month++;
+                    }
+                }
+
+                <th><span style='color: red;'>*</span>單位</th>
+            </tr>
+            @{
+                int steatyear = ViewBag.year - 1911;
+                int startmonth = ViewBag.month;
+            }
+            <tr class="theadcolor">
+                <th rowspan="2">
+                    計費區間
+                </th>
+                <th>起始日期</th>
+
+                @for (int i = 0; i < monthcount + 1; i++)
+                {
+                    if (i == 0)//第0比月份-1
+                    {
+                        <td>
+                            @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)//依照DateTime給予input資料
+                            {
+                                if (startmonth - 1 == 0)
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == (steatyear - 1) + " / 12")//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="StartTime" id="StartTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_StartTime[j]?.Num" data-onemonthtable-name="StartTime" data-onemonthtable-id="StartTime[@i]" />
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == steatyear + " / " + (startmonth - 1))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="StartTime" id="StartTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_StartTime[j]?.Num" data-onemonthtable-name="StartTime" data-onemonthtable-id="StartTime[@i]" />
+                                        break;
+                                    }
+                                }
+
+                                if (j == Model.DIntervalusetotals_DateTime?.Count - 1)//全部跑完都沒有對應的資料時，則給予空的input
+                                {
+                                    <input type="text" name="StartTime" id="StartTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-onemonthtable-name="StartTime" data-onemonthtable-id="StartTime[@i]" />
+                                }
+                            }
+                            @if (Model.DIntervalusetotals_DateTime?.Count == 0)//如果資料為空則給予空的input
+                            {
+                                <input type="text" name="StartTime" id="StartTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-onemonthtable-name="StartTime" data-onemonthtable-id="StartTime[@i]" />
+
+                            }
+                        </td>
+                    }
+                    else//剩餘資料
+                    {
+                        if (startmonth > 12)
+                        {
+                            steatyear += 1;
+                            startmonth = 1;
+                        }
+                        @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)//依照DateTime給予input資料
+                        {
+                            @if (Model.DIntervalusetotals_DateTime[j]?.Num == steatyear + " / " + (startmonth))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                            {
+                                <td><input type="text" name="StartTime" id="StartTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_StartTime[j]?.Num" data-onemonthtable-name="StartTime" data-onemonthtable-id="StartTime[@i]" /></td>
+                                break;
+                            }
+                            if (j == Model.DIntervalusetotals_DateTime?.Count - 1)//全部跑完都沒有對應的資料時，則給予空的input
+                            {
+                                <td><input type="text" name="StartTime" id="StartTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-onemonthtable-name="StartTime" data-onemonthtable-id="StartTime[@i]" /></td>
+                            }
+                        }
+                        @if (Model.DIntervalusetotals_DateTime?.Count == 0)//如果資料為空則給予空的input
+                        {
+                            <td><input type="text" name="StartTime" id="StartTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-onemonthtable-name="StartTime" data-onemonthtable-id="StartTime[@i]" /></td>
+                        }
+                        startmonth++;
+                    }
+
+                }
+                <td rowspan="4">
+                    <select name="Unit" id="Unit" style="width: 100%; height: 150px;" data-onemonthtable-name="Unit" data-onemonthtable-id="Unit">
+                        @foreach (var a in ViewBag.Unit)
+                        {
+                            //單位有資料時，則一開始選取該單位
+                            if (Model.Unit?.Num == a.Code)
+                            {
+                                <option value="@a.Code" selected>@a.Name</option>
+
+                            }
+                            else
+                            {
+                                <option value="@a.Code">@a.Name</option>
+
+                            }
+                        }
+                    </select>
+                </td>
+            </tr>
+            @{
+                int endyear = ViewBag.year - 1911;
+                int endmonth = ViewBag.month;
+            }
+            <tr class="theadcolor">
+                <th>結束日期</th>
+                @for (int i = 0; i < monthcount + 1; i++)
+                {
+                    if (i == 0)//第一筆
+                    {
+                        <td>
+                            @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)
+                            {
+                                if (endmonth - 1 == 0)
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == (steatyear - 1) + " / 12")//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="EndTime" id="EndTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_EndTime[j]?.Num" data-onemonthtable-name="EndTime" data-onemonthtable-id="EndTime[@i]" />
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == steatyear + " / " + (endmonth - 1))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="EndTime" id="EndTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_EndTime[j]?.Num" data-onemonthtable-name="EndTime" data-onemonthtable-id="EndTime[@i]" />
+                                        break;
+                                    }
+                                }
+                                if (j == Model.DIntervalusetotals_DateTime?.Count - 1)
+                                {
+                                    <input type="text" name="EndTime" id="EndTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-onemonthtable-name="EndTime" data-onemonthtable-id="EndTime[@i]" />
+                                }
+                            }
+                            @if (Model.DIntervalusetotals_DateTime?.Count == 0)
+                            {
+                                <input type="text" name="EndTime" id="EndTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-onemonthtable-name="EndTime" data-onemonthtable-id="EndTime[@i]" />
+
+                            }
+                        </td>
+                    }
+                    else//剩餘資料
+                    {
+                        if (endmonth > 12)
+                        {
+                            endyear += 1;
+                            endmonth = 1;
+                        }
+                        @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)
+                        {
+                            @if (Model.DIntervalusetotals_DateTime[j]?.Num == endyear + " / " + (endmonth))
+                            {
+                                <td><input type="text" name="EndTime" id="EndTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_EndTime[j]?.Num" data-onemonthtable-name="EndTime" data-onemonthtable-id="EndTime[@i]" /></td>
+                                break;
+                            }
+                            if (j == Model.DIntervalusetotals_DateTime?.Count - 1)
+                            {
+                                <td><input type="text" name="EndTime" id="EndTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-onemonthtable-name="EndTime" data-onemonthtable-id="EndTime[@i]" /></td>
+                            }
+                        }
+                        @if (Model.DIntervalusetotals_DateTime?.Count == 0)
+                        {
+                            <td><input type="text" name="EndTime" id="EndTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-onemonthtable-name="EndTime" data-onemonthtable-id="EndTime[@i]" /></td>
+                        }
+                        endmonth++;
+                    }
+
+                }
+            </tr>
+            @{
+                int numyear = ViewBag.year - 1911;
+                int nummonth = ViewBag.month;
+            }
+            <tr class="theadcolor">
+                <th colspan="2">數值</th>
+
+                @for (int i = 0; i < monthcount + 1; i++)
+                {
+                    if (i == 0)
+                    {
+                        <td>
+                            @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)
+                            {
+
+                                if (nummonth - 1 == 0)
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == (numyear - 1) + " / 12")//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="Num" id="Num[@i]" class="sumtotal" value="@Model.DIntervalusetotals_Num[j]?.Num" data-onemonthtable-name="Num" data-onemonthtable-id="Num[@i]" />
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == numyear + " / " + (nummonth - 1))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="Num" id="Num[@i]" class="sumtotal" value="@Model.DIntervalusetotals_Num[j]?.Num" data-onemonthtable-name="Num" data-onemonthtable-id="Num[@i]" />
+                                        break;
+                                    }
+                                }
+                                if (j == Model.DIntervalusetotals_DateTime?.Count - 1)
+                                {
+                                    <input type="text" name="Num" id="Num[@i]" class="sumtotal" data-onemonthtable-name="Num" data-onemonthtable-id="Num[@i]" />
+                                }
+                            }
+                            @if (Model.DIntervalusetotals_DateTime?.Count == 0)
+                            {
+                                <input type="text" name="Num" id="Num[@i]" class="sumtotal" data-onemonthtable-name="Num" data-onemonthtable-id="Num[@i]" />
+
+                            }
+                        </td>
+                    }
+                    else
+                    {
+                        if (nummonth > 12)
+                        {
+                            numyear += 1;
+                            nummonth = 1;
+                        }
+                        @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)
+                        {
+                            @if (Model.DIntervalusetotals_DateTime[j]?.Num == numyear + " / " + (nummonth))
+                            {
+                                <td><input type="text" name="Num" id="Num[@i]" class="sumtotal" value="@Model.DIntervalusetotals_Num[j]?.Num" data-onemonthtable-name="Num" data-onemonthtable-id="Num[@i]" /></td>
+                                break;
+                            }
+                            if (j == Model.DIntervalusetotals_DateTime?.Count - 1)
+                            {
+                                <td><input type="text" name="Num" id="Num[@i]" class="sumtotal" data-onemonthtable-name="Num" data-onemonthtable-id="Num[@i]" /></td>
+                            }
+                        }
+                        @if (Model.DIntervalusetotals_DateTime?.Count == 0)
+                        {
+                            <td><input type="text" name="Num" id="Num[@i]" class="sumtotal" data-onemonthtable-name="Num" data-onemonthtable-id="Num[@i]" /></td>
+                        }
+                        nummonth++;
+                    }
+
+                }
+            </tr>
+            <tr class="theadcolor">
+                <th colspan="2">總量</th>
+                <td colspan="@(monthcount+1)"><input type="text" id="TotalNum" name="TotalNum" value="0" readonly class="detailtotal textcenter" data-onemonthtable-name="TotalNum" data-onemonthtable-id="TotalNum" /></td>
+            </tr>
+
+        </table>
+
+        @{
+            monthcount = ViewBag.monthcount;
+            int AddMonth = 0;
+            if (ViewBag.AddMonth != null && ViewBag.AddMonth.Num != null)
+            {
+                AddMonth = int.Parse(ViewBag.AddMonth.Num);
+            }
+            year = ViewBag.year - 1911;
+            month = ViewBag.month + AddMonth;
+            if (month > 12)
+            {
+                month = 1;
+                year++;
+            }
+            else if (month < 1)
+            {
+                month = 12;
+                year--;
+            }
+        }
+        <input type="text" name="AddMonth" id="AddMonth" value="@AddMonth" style="display:none" />
+        <table border="1" style="width: 100%; border-collapse:collapse; display:none" id="TwoMonthTable" class="table-responsive fixed-table">
+            <tr class="theadcolor">
+                <th colspan="2">年/月<input type="button" value="月份減1" data-addmonth="@AddMonth" data-month="@ViewBag.month" class="MonthSubtraction1" /><input type="button" value="月份加1" data-addmonth="@AddMonth" data-month="@ViewBag.month" class="MonthAdd1" /></th>
+                @for (int i = 0; i < monthcount + 2; i += 2)
+                {
+                    //第一筆月份減1，如果等於0則為前一年12月
+                    if (i == 0)
+                    {
+                        if (month - 2 <= 0)
+                        {
+                            <th><input type="text" name="DateTimes" value="@(year-1) / @Math.Abs(month-2+12)" readonly style="border: none; background-color: transparent; outline: none; cursor: default;" data-twomonthtable-name="DateTimes" /></th>
+
+                        }
+                        else
+                        {
+                            <th><input type="text" name="DateTimes" value="@year / @(month-2)" readonly style="border: none; background-color: transparent; outline: none; cursor: default;" data-twomonthtable-name="DateTimes" /></th>
+
+                        }
+                    }
+                    else
+                    {
+                        //如果月份大於12年分加1，月份從1開始
+                        if (month > 12)
+                        {
+                            year += 1;
+                            month -= 12;
+                        }
+
+                        <th>
+                            <input type="text" name="DateTimes" value="@year / @month" readonly style="border: none; background-color: transparent; outline: none; cursor: default;" data-twomonthtable-name="DateTimes" />
+                        </th>
+
+
+
+                        month += 2;
+                    }
+                }
+
+                <th><span style='color: red;'>*</span>單位</th>
+            </tr>
+            @{
+                steatyear = ViewBag.year - 1911;
+                startmonth = ViewBag.month + AddMonth;
+                if (startmonth > 12)
+                {
+                    startmonth = 1;
+                    steatyear++;
+                }
+                else if (startmonth < 1)
+                {
+                    startmonth = 12;
+                    steatyear--;
+                }
+            }
+            <tr class="theadcolor">
+                <th rowspan="2">
+                    計費區間
+                </th>
+                <th>起始日期</th>
+
+                @for (int i = 0; i < monthcount + 2; i += 2)
+                {
+                    if (i == 0)//第0比月份-1
+                    {
+                        <td>
+                            @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)//依照DateTime給予input資料
+                            {
+                                if (startmonth - 2 <= 0)
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == (steatyear - 1) + " / " + Math.Abs(startmonth - 2 + 12))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="StartTime" id="StartTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_StartTime[j]?.Num" data-twomonthtable-name="StartTime" data-twomonthtable-id="StartTime[@i]" />
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == steatyear + " / " + (startmonth - 2))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="StartTime" id="StartTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_StartTime[j]?.Num" data-twomonthtable-name="StartTime" data-twomonthtable-id="StartTime[@i]" />
+                                        break;
+                                    }
+                                }
+
+                                if (j == Model.DIntervalusetotals_DateTime?.Count - 1)//全部跑完都沒有對應的資料時，則給予空的input
+                                {
+                                    <input type="text" name="StartTime" id="StartTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-twomonthtable-name="StartTime" data-twomonthtable-id="StartTime[@i]" />
+                                }
+                            }
+                            @if (Model.DIntervalusetotals_DateTime?.Count == 0)//如果資料為空則給予空的input
+                            {
+                                <input type="text" name="StartTime" id="StartTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-twomonthtable-name="StartTime" data-twomonthtable-id="StartTime[@i]" />
+
+                            }
+                        </td>
+                    }
+                    else//剩餘資料
+                    {
+                        if (startmonth > 12)
+                        {
+                            steatyear += 1;
+                            startmonth -= 12;
+                        }
+                        @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)//依照DateTime給予input資料
+                        {
+                            @if (Model.DIntervalusetotals_DateTime[j]?.Num == steatyear + " / " + (startmonth))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                            {
+                                <td><input type="text" name="StartTime" id="StartTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_StartTime[j]?.Num" data-twomonthtable-name="StartTime" data-twomonthtable-id="StartTime[@i]" /></td>
+                                break;
+                            }
+                            if (j == Model.DIntervalusetotals_DateTime?.Count - 1)//全部跑完都沒有對應的資料時，則給予空的input
+                            {
+                                <td><input type="text" name="StartTime" id="StartTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-twomonthtable-name="StartTime" data-twomonthtable-id="StartTime[@i]" /></td>
+                            }
+                        }
+                        @if (Model.DIntervalusetotals_DateTime?.Count == 0)//如果資料為空則給予空的input
+                        {
+                            <td><input type="text" name="StartTime" id="StartTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-twomonthtable-name="StartTime" data-twomonthtable-id="StartTime[@i]" /></td>
+                        }
+                        startmonth += 2;
+                    }
+
+                }
+                <td rowspan="4">
+                    <select name="Unit" id="Unit" style="width: 100%; height: 150px;" data-twomonthtable-name="Unit" data-twomonthtable-id="Unit">
+                        @foreach (var a in ViewBag.Unit)
+                        {
+                            //單位有資料時，則一開始選取該單位
+                            if (Model.Unit?.Num == a.Code)
+                            {
+                                <option value="@a.Code" selected>@a.Name</option>
+
+                            }
+                            else
+                            {
+                                <option value="@a.Code">@a.Name</option>
+
+                            }
+                        }
+                    </select>
+                </td>
+            </tr>
+            @{
+                endyear = ViewBag.year - 1911;
+                endmonth = ViewBag.month + AddMonth;
+                if (endmonth > 12)
+                {
+                    endmonth = 1;
+                    endyear++;
+                }
+                else if (endmonth < 1)
+                {
+                    endmonth = 12;
+                    endyear--;
+                }
+            }
+            <tr class="theadcolor">
+                <th>結束日期</th>
+                @for (int i = 0; i < monthcount + 2; i += 2)
+                {
+                    if (i == 0)//第一筆
+                    {
+                        <td>
+                            @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)
+                            {
+                                if (endmonth - 2 <= 0)
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == (endyear - 1) + " / " + Math.Abs(endmonth - 2 + 12))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="EndTime" id="EndTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_EndTime[j]?.Num" data-twomonthtable-name="EndTime" data-twomonthtable-id="EndTime[@i]" />
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == endyear + " / " + (endmonth - 2))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="EndTime" id="EndTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_EndTime[j]?.Num" data-twomonthtable-name="EndTime" data-twomonthtable-id="EndTime[@i]" />
+                                        break;
+                                    }
+                                }
+                                if (j == Model.DIntervalusetotals_DateTime?.Count - 1)
+                                {
+                                    <input type="text" name="EndTime" id="EndTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-twomonthtable-name="EndTime" data-twomonthtable-id="EndTime[@i]" />
+                                }
+                            }
+                            @if (Model.DIntervalusetotals_DateTime?.Count == 0)
+                            {
+                                <input type="text" name="EndTime" id="EndTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-twomonthtable-name="EndTime" data-twomonthtable-id="EndTime[@i]" />
+
+                            }
+                        </td>
+                    }
+                    else//剩餘資料
+                    {
+                        if (endmonth > 12)
+                        {
+                            endyear += 1;
+                            endmonth -= 12;
+                        }
+                        @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)
+                        {
+                            @if (Model.DIntervalusetotals_DateTime[j]?.Num == endyear + " / " + (endmonth))
+                            {
+                                <td><input type="text" name="EndTime" id="EndTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_EndTime[j]?.Num" data-twomonthtable-name="EndTime" data-twomonthtable-id="EndTime[@i]" /></td>
+                                break;
+                            }
+                            if (j == Model.DIntervalusetotals_DateTime?.Count - 1)
+                            {
+                                <td><input type="text" name="EndTime" id="EndTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-twomonthtable-name="EndTime" data-twomonthtable-id="EndTime[@i]" /></td>
+                            }
+                        }
+                        @if (Model.DIntervalusetotals_DateTime?.Count == 0)
+                        {
+                            <td><input type="text" name="EndTime" id="EndTime[@i]" class="TwoMonthAuto" placeholder="YYY/MM/DD" maxlength="9" data-twomonthtable-name="EndTime" data-twomonthtable-id="EndTime[@i]" /></td>
+                        }
+                        endmonth += 2;
+                    }
+
+                }
+            </tr>
+            @{
+                numyear = ViewBag.year - 1911;
+                nummonth = ViewBag.month + AddMonth;
+                if (nummonth > 12)
+                {
+                    nummonth = 1;
+                    numyear++;
+                }
+                else if (nummonth < 1)
+                {
+                    nummonth = 12;
+                    numyear--;
+                }
+
+            }
+            <tr class="theadcolor">
+                <th colspan="2">數值</th>
+
+                @for (int i = 0; i < monthcount + 2; i += 2)
+                {
+                    if (i == 0)
+                    {
+                        <td>
+                            @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)
+                            {
+
+                                if (nummonth - 2 <= 0)
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == (numyear - 1) + " / " + Math.Abs(nummonth - 2 + 12))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="Num" id="Num[@i]" class="TwoMonthsumtotal" value="@Model.DIntervalusetotals_Num[j]?.Num" data-twomonthtable-name="Num" data-twomonthtable-id="Num[@i]" />
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == numyear + " / " + (nummonth - 2))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    {
+                                        <input type="text" name="Num" id="Num[@i]" class="TwoMonthsumtotal" value="@Model.DIntervalusetotals_Num[j]?.Num" data-twomonthtable-name="Num" data-twomonthtable-id="Num[@i]" />
+                                        break;
+                                    }
+                                }
+                                if (j == Model.DIntervalusetotals_DateTime?.Count - 1)
+                                {
+                                    <input type="text" name="Num" id="Num[@i]" class="TwoMonthsumtotal" data-twomonthtable-name="Num" data-twomonthtable-id="Num[@i]" />
+                                }
+                            }
+                            @if (Model.DIntervalusetotals_DateTime?.Count == 0)
+                            {
+                                <input type="text" name="Num" id="Num[@i]" class="TwoMonthsumtotal" data-twomonthtable-name="Num" data-twomonthtable-id="Num[@i]" />
+
+                            }
+                        </td>
+                    }
+                    else
+                    {
+                        if (nummonth > 12)
+                        {
+                            numyear += 1;
+                            nummonth -= 12;
+                        }
+                        @for (int j = 0; j < Model.DIntervalusetotals_DateTime?.Count; j++)
+                        {
+                            @if (Model.DIntervalusetotals_DateTime[j]?.Num == numyear + " / " + (nummonth))
+                            {
+                                <td><input type="text" name="Num" id="Num[@i]" class="TwoMonthsumtotal" value="@Model.DIntervalusetotals_Num[j]?.Num" data-twomonthtable-name="Num" data-twomonthtable-id="Num[@i]" /></td>
+                                break;
+                            }
+                            if (j == Model.DIntervalusetotals_DateTime?.Count - 1)
+                            {
+                                <td><input type="text" name="Num" id="Num[@i]" class="TwoMonthsumtotal" data-twomonthtable-name="Num" data-twomonthtable-id="Num[@i]" /></td>
+                            }
+                        }
+                        @if (Model.DIntervalusetotals_DateTime?.Count == 0)
+                        {
+                            <td><input type="text" name="Num" id="Num[@i]" class="TwoMonthsumtotal" data-twomonthtable-name="Num" data-twomonthtable-id="Num[@i]" /></td>
+                        }
+                        nummonth += 2;
+                    }
+
+                }
+            </tr>
+            <tr class="theadcolor">
+                <th colspan="2">總量</th>
+                <td colspan="@(monthcount/2+1)"><input type="text" id="TotalNum" name="TotalNum" value="0" readonly class="detailtotal textcenter" data-twomonthtable-name="TotalNum" data-twomonthtable-id="TotalNum" /></td>
+            </tr>
+
+        </table>
+        <br />
+
+        <table border="1" style="width:100%; border-collapse:collapse;" id="myTable" class="table-responsive fixed-table">
+            <tr class="theadcolor">
+                <th><span style='color: red;'>*</span>管理單位</th>
+                <th><span style='color: red;'>*</span>負責人員</th>
+                <th><span style='color: red;'>*</span>數據來源</th>
+                <th>檔案上傳</th>
+
+            </tr>
+            <tr>
+                <td><input type="text" name="management" id="management" value="@Model.DDatasource?.Management" required title="請填寫管理單位"></td>
+                <td><input type="text" name="Principal" id="Principal" value="@Model.DDatasource?.Principal" required title="請填寫負責人員"></td>
+                <td><input type="text" name="Datasource" id="Datasource" value="@Model.DDatasource?.Datasource" required title="請填寫數據來源"></td>
+                <td>
+                    <input multiple type="file" name="EvidenceFile" id="EvidenceFile">
+                </td>
+
+            </tr>
+        </table>
+    </div>
+    <br />
+    <div class="form-group textcenter">
+        <input type="text" value="@ViewBag.basicid" name="basicid" style="display:none" />
+        <a class="genbtn window-close">關閉</a>
+        <input type="submit" value="送出" class="genbtn" />
+    </div>
+</form>

@@ -1,0 +1,68 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+@section Scripts{
+
+    <script nonce="@nonce">
+
+        function sendDataToServer() {
+            var BasicId = document.getElementsByName("BasicId")[0].value;
+            //var excelArray = Array.from(ExcelData); // 將 ExcelData 轉換為陣列
+            var file = document.getElementById("fileInput").files[0];
+
+            var formData = new FormData();
+            formData.append("file", file);
+            formData.append("BasicId", BasicId);
+
+            $.ajax({
+                url: '/OrganizeJSON/WorkinghourImport/',
+                data: formData,
+                type: "post",
+                dataType: 'json',
+                dataType: 'json',
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    if (response.success) {
+                        // 处理返回的 JSON 数据
+                        var results = response.sucess;
+                        console.log(results)
+
+                        // 将结果展示在页面上
+                        var logsContainer = $('#logs');
+                        for (var i = 0; i < results.length; i++) {
+                            var resultItem = $('<li>').html(results[i]);
+                            logsContainer.append(resultItem);
+                        }
+                    }
+                    else {
+                        // 登入失敗，處理錯誤回應
+                        alert(response.error);
+                    }
+                },
+            });
+        }
+
+    </script>
+}
+<form asp-action="WorkinghourImport" id="WorkinghourImport">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="center form-group textcenter upload-button">
+        <input type="text" value="@ViewBag.BasicId" name="BasicId" style="display:none" />
+        <label>
+            <input type="file" id="fileInput" accept=".json" />
+            <input type="button" value="上傳" class="genbtn sendDataToServer" />
+
+        </label>
+        <div class="row sb-box">
+            <div class="col s8 m8 xl8">
+                <ul id="logs">
+                </ul>
+            </div>
+        </div>
+        <input type="button" class="genbtn returnInventoryTablePage" data-basicid="@ViewBag.BasicId" data-page="Workinghour" value="返回" />
+    </div>
+</form>

@@ -1,0 +1,225 @@
+﻿@model ITRIProject.Models.Member
+
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "忘記密碼";
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+<div class="container">
+    <h3>忘記密碼</h3>
+   <div class="col-md-4">
+        <form  id="form1">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="verId" name="verId" value="" />
+            <div class="form-group">
+                <label class="control-label">電子信箱</label>
+                <input id="email" type="email" name="email" class="form-control" autocomplete="off" />
+                <span  class="text-danger"></span>
+                <button type="button" class="btn btn-primary genbtn" id="btnSend">寄送驗證碼</button>
+
+            </div>
+            <div class="form-group">
+                <label class="control-label">驗證碼</label>
+                <input name="captchaCode" class="form-control" id="vercode" type="text" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary genbtn" id="btnOK" type="button">確認</button>
+            </div>
+            <div class="form-group">
+               
+            </div>
+            
+        </form>
+        <form id="form2" style="display:none">
+            
+            <div class="form-group">
+                <label class="control-label">新密碼</label><br />(規則:須包含1符號+1大寫英+1小寫英+1數字，最少6字元)
+                <input id="newpassword" name="newpassword" type="password" class="form-control" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label class="control-label">確認密碼</label>
+                <input id="repassword" name="repassword" type="password" class="form-control" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <button id="btnReset" class="btn btn-primary genbtn" type="button" name="action">更改</button>
+            </div>
+
+        </form>
+   </div>
+    
+</div>
+@section Scripts {
+    <script nonce="@nonce">
+      
+
+    $(function () {
+        $("#form1").validate({
+            rules: {
+                email: {
+                    required: true,
+                    email: true
+                },
+                vercode: "required",
+            },
+            //For custom messages
+            messages: {
+                email: "請輸入正確的郵件地址",
+                vercode: "請輸入驗證碼",
+            },
+            errorClass: "invalid",
+            errorElement: 'div',
+            errorPlacement: function (error, element) {
+                var placement = $(element).data('error');
+                if (placement) {
+                    $(placement).append(error)
+                } else {
+                    error.insertAfter(element);
+                }
+            }
+        });
+        $("#form2").validate({
+            rules: {
+                    newpassword: {
+                        required: true,
+                        minlength: 6,
+                        maxlength: 18
+                    },
+                    repassword: {
+                        required: true,
+                        equalTo: "#newpassword"
+                    },
+            },
+            //For custom messages
+            messages: {
+                    newpassword: {
+                        required: "請輸入新密碼",
+                        minlength: "密碼至少需要 {0} 個字符"
+                    },
+                    repassword: {
+                        required: "請輸入確認密碼",
+                        equalTo: "請與新密碼保持一致"
+                    },
+            },
+            errorClass: "invalid",
+            errorElement: 'div',
+            errorPlacement: function (error, element) {
+                var placement = $(element).data('error');
+                if (placement) {
+                    $(placement).append(error)
+                } else {
+                    error.insertAfter(element);
+                }
+            }
+        });
+        //發送
+        $("#btnSend").click(function () {
+            var isValid = $("#form1").validate().element($("#email"));
+            if (!isValid) {
+                return false;
+            }
+            $.ajax({
+                url: '/Member/ForgetPwdEmail',
+                data: { //email: $("#email").val()
+                    "__RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val(),
+                    "email": $('input[id="email"]').val(),
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('input[name="__RequestVerificationToken"]').val(),
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val(),
+                    '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val(),
+                    'CSRFToken': $('input[name="__RequestVerificationToken"]').val(),
+                    'csrf_token': $('input[name="__RequestVerificationToken"]').val(),
+                    'OWASP_CSRFTOKEN': $('input[name="__RequestVerificationToken"]').val(),
+                },
+                type: "post",
+                dataType: 'json',
+                success: function (response) {
+                    $("#verId").val("");
+                    if (response.success) {
+                        $("#verId").val(response.id);
+                        layer.msg("發送成功，請前去郵箱檢視驗證碼");
+                    } else {
+                        layer.msg(response.error);
+                    }
+                }
+            });
+            return false;
+        });
+        //確認
+        $("#btnOK").click(function () {
+            var isValid = $("#form1").validate().form();
+            if (!isValid) {
+                return false;
+            }
+            $.ajax({
+                url:  '/Member/ForgetPwd',
+                //data: $("#form1").serialize(),
+                data: {
+                    "__RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val(),
+                    "email": $('input[id="email"]').val(),
+                    "vercode": $('input[id="vercode"]').val(),
+                    "verId": $('input[id="verId"]').val(),
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('input[name="__RequestVerificationToken"]').val(),
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val(),
+                    '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val(),
+                    'CSRFToken': $('input[name="__RequestVerificationToken"]').val(),
+                    'csrf_token': $('input[name="__RequestVerificationToken"]').val(),
+                    'OWASP_CSRFTOKEN': $('input[name="__RequestVerificationToken"]').val(),
+                },
+                type: "post",
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        $("#form1").hide();
+                        $("#form2").show();
+                    } else {
+                        layer.msg(response.error);
+                    }
+                }
+            });
+            return false;
+        });
+        //重置
+        $("#btnReset").click(function () {
+            var isValid = $("#form2").validate().form();
+            if (!isValid) {
+                return false;
+            }
+            $.ajax({
+                url: '/Member/ForgetPwd2',
+                data: {
+                  
+                    "__RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val(),
+                    "newpassword": $('input[id="newpassword"]').val(),
+                },
+                headers: {
+                    'X-CSRF-TOKEN': $('input[name="__RequestVerificationToken"]').val(),
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val(),
+                    '__RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val(),
+                    'CSRFToken': $('input[name="__RequestVerificationToken"]').val(),
+                    'csrf_token': $('input[name="__RequestVerificationToken"]').val(),
+                    'OWASP_CSRFTOKEN': $('input[name="__RequestVerificationToken"]').val(),
+                },
+                type: "post",
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        layer.msg("重設成功，請前去登入");
+                        setTimeout(function () {
+                            location.href = "/MemberMangment/Index";
+                        }, 1500);
+                    } else {
+                        layer.msg(response.error);
+                    }
+                }
+            });
+            return false;
+        });
+    });
+</script>
+}
