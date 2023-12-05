@@ -48,12 +48,40 @@ namespace Project.Controllers
             var account = collection["Account"].FirstOrDefault();
             var passwd = collection["Passwd"].FirstOrDefault();
             var Email = collection["Email"].FirstOrDefault();
-
+            var captchaCode = collection["captchaCode"].FirstOrDefault();
+            var verId = collection["verId"].FirstOrDefault();
             var repasswd = rePasswd;
 
             var a = _MyDbContext.Members.Any(a => a.Account == account);
             var Emails = _MyDbContext.Members.Any(a => a.Email == Email);
+            var codeTF = _MyDbContext.VerifyCodes.Any(a => a.Id == verId.ToString().ParseToInt());
 
+            if (codeTF)
+            {
+                var code = _MyDbContext.VerifyCodes.AsQueryable().First(a => a.Id == verId.ToString().ParseToInt());
+
+                DateTime currentTime = DateTime.Now;
+                if (currentTime > code.ExpireTime)
+                {
+                    return Error("驗證碼已超過時間，請重新發送");
+                }
+                if (code == null)
+                {
+                    return Error("信箱驗證碼不存在");
+                }
+                if (code.Number != Email)
+                {
+                    return Error("信箱驗證碼與信箱不匹配");
+                }
+                if (code.VerifyCode1 != captchaCode)
+                {
+                    return Error("信箱驗證碼不正確");
+                }
+            }
+            else
+            {
+                return Error("請發送驗證碼");
+            }
             if (a)//判斷帳號是否存在
             {
                 return Error("帳號已存在");
@@ -315,7 +343,7 @@ namespace Project.Controllers
 
             var model = _MyDbContext.Members.FirstOrDefault(a => a.MemberId.ToString() == AccountId());
 
-            var emails = _MyDbContext.Members.Any(a=>a.MemberId.ToString() != AccountId() && a.Email == collection["Email"]);
+            var emails = _MyDbContext.Members.Any(a=>a.MemberId.ToString() != AccountId() && a.Email == collection["Email"].ToString());
 
             if (emails)
             {
@@ -343,6 +371,18 @@ namespace Project.Controllers
             {
                 var Emails = _MyDbContext.Members.Any(a => a.Email == email);
                 var Accounts = _MyDbContext.Members.Any(a => a.Account == account);
+
+                var codeTF = _MyDbContext.VerifyCodes.Any((a => a.Number == email.ToString().Trim()));
+
+                if (codeTF)
+                {
+                    var code = _MyDbContext.VerifyCodes.AsQueryable().OrderByDescending(a => a.Id).First(a => a.Number == email.ToString().Trim());
+                    DateTime currentTime = DateTime.Now;
+                    if (currentTime <= code.ExpireTime)
+                    {
+                        return Error("已傳送驗證碼，請去信箱查收");
+                    }
+                }
                 if (Accounts)
                 {
                     return Error("帳號已存在");
