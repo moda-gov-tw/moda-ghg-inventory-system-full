@@ -206,8 +206,10 @@
                   <div class="col-md-4">
                 <div class="form-group">
                     <span style='color: red;'>*</span><label class="control-label">驗證碼</label>
-                        <input name="captchaCode" class="form-control" id="vercode" type="text" autocomplete="off" /><button class="btn btn-primary genbtn" id="btnOK" type="button">認證</button>
-                </div></div>
+                        <input name="captchaCode" class="form-control" id="vercode" type="text" autocomplete="off" /><button class="btn btn-primary genbtn" id="btnOK" type="button" hidden>認證</button>
+                        <input name="verId" id="verId" class="verId form-control" type="text" hidden />
+                    </div>
+                </div>
                   <div class="col-md-4">
                 <div class="form-group">
                     <span style='color: red;'>*</span><label class="control-label">姓名</label>
