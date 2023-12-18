@@ -892,7 +892,7 @@
                             {
                                 if (endmonth - 1 == 0)
                                 {
-                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == (steatyear - 1) + " / 12")//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == (endyear - 1) + " / 12")//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
                                     {
                                         <input type="text" name="EndTime" id="EndTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_EndTime[j]?.Num" data-onemonthtable-name="EndTime" data-onemonthtable-id="EndTime[@i]" />
                                         break;
@@ -900,7 +900,7 @@
                                 }
                                 else
                                 {
-                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == steatyear + " / " + (endmonth - 1))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
+                                    @if (Model.DIntervalusetotals_DateTime[j]?.Num == endyear + " / " + (endmonth - 1))//判斷DateTime所有資料是否有相等，有則帶資料跳出，繼續下一個迴圈
                                     {
                                         <input type="text" name="EndTime" id="EndTime[@i]" class="OneMonthAuto" placeholder="YYY/MM/DD" maxlength="9" value="@Model.DIntervalusetotals_EndTime[j]?.Num" data-onemonthtable-name="EndTime" data-onemonthtable-id="EndTime[@i]" />
                                         break;

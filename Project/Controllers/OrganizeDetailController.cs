@@ -404,17 +404,7 @@ namespace Project.Controllers
                      )
                      .OrderBy(r => r.Sort) // 根據 Sort 欄位進行升序排序
                      .ToList();
-                bool hasDataWithCode22 = Units.Any(u => u.Code == "22");
 
-                if (!hasDataWithCode22)
-                {
-                    var additionalData = _MyDbContext.Selectdata
-                        .Where(s => s.Code == "22")
-                        .Select(s => new { Name = s.Name, Code = s.Code, Sort = s.Sort })
-                        .ToList();
-
-                    Units.AddRange(additionalData);
-                }
                 ViewBag.Unit = Units;
                 ViewBag.Method = _MyDbContext.Selectdata.Where(a => a.Type == "Transportation");
                 ViewBag.Car = _MyDbContext.Selectdata.Where(a => a.Type == "Car");

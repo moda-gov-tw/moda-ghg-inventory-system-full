@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 
 namespace Project.Controllers
 {
@@ -23,10 +24,10 @@ namespace Project.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        //public IActionResult Privacy()
+        //{
+        //    return View();
+        //}
 
         //[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         //public IActionResult Error()
@@ -114,5 +115,29 @@ namespace Project.Controllers
 
             return JsonConvert.SerializeObject(value, Formatting.Indented, serializerSettings);
         }
+
+        /// <summary>
+        /// 隱私權及安全政策
+        /// </summary>
+        /// <param name="id">接收狀態碼(404:請求Url不存在(包括請求地址及靜態資源文件);)</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public IActionResult Privacy(int id)
+        {
+            ViewBag.statusCode = 200;
+            return View(ViewBag);
+        }
+        /// <summary>
+        /// 隱私權及安全政策
+        /// </summary>
+        /// <param name="id">接收狀態碼(404:請求Url不存在(包括請求地址及靜態資源文件);)</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public IActionResult Open(int id)
+        {
+            ViewBag.statusCode = 200;
+            return View(ViewBag);
+        }
+
     }
 }

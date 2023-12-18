@@ -1,6 +1,244 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    Layout = null;
+    ViewBag.Title = "隱私權及安全政策Privacy & Security Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<!DOCTYPE html>
+<html>
+@{
+    string nonce = @Context.Items["CSPNonce"].ToString() as string;
+}
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="16x16" href="~/Img/Moda.ico">
+    <title>GHG-數位產業自願性溫室氣體盤查系統</title>
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/magnific-popup.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/magnific-popup/magnific-popup.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid-theme.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/lib/jsgrid/jsgrid-theme.min.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiColor.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiLayout.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/OchiRWD.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/prclayout.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+
+    <style nonce="@nonce">
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .site-content {
+            min-height: 100vh; /* 使用視窗高度作為最小高度 */
+            margin-bottom: -50px; /* 扣除 footer 的高度 */
+        }
+
+        .circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: red;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+            .circle span {
+                color: white;
+            }
+
+        head_div {
+            margin-right: 30px;
+            flex-grow: 0;
+        }
+    </style>
+
+    <link nonce="@nonce" rel="stylesheet" href="~/css/error-pages.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/error-style.css" />
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                @if (Context.Session.GetString("Account") != null)
+                {
+                    <a class="navbar-brand" asp-area="" asp-controller="Organize" asp-action="Details"><img src='/Img/logo.png'></a>
+                }
+                else
+                {
+                    <a class="navbar-brand" asp-area="" asp-controller="Member" asp-action="Login"><img src='/Img/logo.png'></a>
+                }
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between textright head_div" style="margin-right: 30px; flex-grow:0">
+                    <div class='font_set'>
+                        <button id="smallFont">A-</button>
+                        <button id="mediumFont">A</button>
+                        <button id="largeFont">A+</button>
+                    </div>
+                    <ul class="navbar-nav  ml-auto">
+                        <li class="nav-item dropdown">
+
+                            <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @if (Context.Session.GetString("Account") != null)
+                                {
+
+                                    <label id="MemberText">
+                                        @Context.Session.GetString("name") @Context.Session.GetString("Account")
+                                    </label>
+                                }
+                                else
+                                {
+                                    <label>
+                                        會員資料
+                                    </label>
+                                }
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                @if (Context.Session.GetString("AccountId") == null)
+                                {
+                                    <li><a class="dropdown-item" href="/Member/Login">登入</a></li>
+                                    <li><a class="dropdown-item" href="/Member/Register">註冊</a></li>
+                                }
+                                else
+                                {
+                                    <li><a class="dropdown-item" href="/Member/Member">會員基本資料</a></li>
+                                    <li><a class="dropdown-item" href="/Member/EditPassword">修改密碼</a></li>
+                                    @if (Context.Session.GetString("LoginType") == "microsoft")
+                                    {
+                                        <li><a id="SignoffNotifyText" class="dropdown-item" href="/SignOff/SignoffNotify">通知</a></li>
+
+                                    }
+                                    <li><a class="dropdown-item" href="/Member/Logout">登出</a></li>
+                                }
+
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="site-content">
+        <div role="main" class="pb-3">
+            <div id="wrapper" class="error-page">
+                <div class="error-box">
+                    <div class="left-align">
+                        <div class="article1 cpArticle">
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+                            <p>歡迎瀏覽「數位發展部全球資訊網」（以下簡稱本網站）， 為了幫助您瞭解本網站如何保護您在使用網站時的安全，及如何蒐集、應用及保護您所提供的個人資訊，請您務必詳細閱讀下列資訊：</p>
+                            <ol>
+                                <li>
+                                    <p class="mb-1"><strong>適用範圍</strong></p>
+                                    使用本網站服務時，所涉及的個人資料蒐集、運用與保護。
+                                </li>
+                                <li>
+                                    <strong>個人資料之蒐集及使用方式</strong>
+                                    <ol>
+                                        <li>（1）單純在本網站的瀏覽及檔案下載行為，本網站並不會蒐集任何有關個人的身份資料。</li>
+                                        <li>（2）利用本網站所提供的民意信箱、線上報名服務，需申請人提供個人資料時，將依需求請您提供姓名及e-mail之個人資料。</li>
+                                        <li>（3）網站會記錄使用者上網時間、IP位置以及在網站內所瀏覽的網頁等資料，係供網站流量和網路行為調查的總量分析，以利於提升本網站的服務品質，並不會對個別使用者進行分析。</li>
+                                    </ol>
+                                </li>
+                                <li>
+                                    <p class="mb-1"><strong>Cookie之使用</strong></p>
+                                    本網址使用Google Inc. 提供的網頁分析服務（Google Analytics）。Google會在您電腦瀏覽器中寫入並讀取Cookie，以此資料進行網站使用分析。若您不願意接受Cookie的寫入，您可在瀏覽器功能項中設定隱私權等級為「高」，即可拒絕Cookie的寫入。<br>
+                                    更多有關Google Analytics使用Cookie的資訊，請參閱<a href="https://policies.google.com/privacy" target="_blank" title="Google隱私權政策(另開新視窗)">Google隱私權政策</a>。
+                                </li>
+                                <li>
+                                    <p class="mb-1"><strong>資訊安全</strong></p>
+                                    <p class="mb-2">基於網站安全及穩定維運之目的，本網站提供以下安全保護措施：</p>
+                                    <ol>
+                                        <li>（1）裝設防火牆設備，限制特定通訊埠的連結，防止非法入侵，以避免網站遭到非法使用，保障使用者的權益。</li>
+                                        <li>（2）使用網路入侵偵測系統，監控網路流量，並對有惡意企圖的行為進行阻隔。</li>
+                                        <li>（3）裝設掃毒軟體，提供使用者安全的網頁瀏覽環境。</li>
+                                        <li>（4）利用弱點偵測軟體，不定期針對網路系統弱點掃描，並予以補強修正。</li>
+                                        <li>（5）定期進行備份作業。</li>
+                                        <li>（6）依相關作業系統廠商或應用程式廠商的安全維護通知，更新適當的修補程式。</li>
+                                    </ol>
+                                </li>
+                                <li>
+                                    <p class="mb-1"><strong>其他</strong></p>
+                                    <p>若您對本網站的隱私權及網站安全政策有任何意見，歡迎隨時與我們聯絡。本網站之隱私權及網站安全政策將因應需求隨時進行修正，修正後的條款將刊登於本網站上。</p>
+                                    
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- All Required js -->
+    <!-- ============================================================== -->
+    <script nonce="@nonce" src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script nonce="@nonce" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script nonce="@nonce" src="~/lib/exceljs/exceljs.js"></script>
+    <script nonce="@nonce" src="~/js/site.js" asp-append-version="true"></script>
+    <script nonce="@nonce" src="~/js/OutputExcel.js" asp-append-version="true"></script>
+    <script nonce="@nonce" src="~/js/OutputCsv.js" asp-append-version="true"></script>
+    <script nonce="@nonce" src="~/js/OutputJson.js" asp-append-version="true"></script>
+    @*      <script src="~/js//tabletoxlsx.js"></script> *@
+    <script nonce="@nonce" src="~/js/exceljs.min.js"></script>
+    <script nonce="@nonce" src="~/js/table2excel.core.js"></script>
+    <script nonce="@nonce" src="~/lib/echarts/echarts.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/magnific-popup/jquery.magnific-popup.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/magnific-popup/init-magnificPopup.js"></script>
+
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid.min.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid-fr.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/layer/layer.js"></script>
+    <script nonce="@nonce" type="text/javascript" src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script nonce="@nonce">
+        var OriginalMemberText;//保留初始文字，SignoffNotify裡面呼叫
+        var OriginalSignoffNotifyText;
+        OriginalMemberText = document.getElementById("MemberText").innerHTML;
+        OriginalSignoffNotifyText = document.getElementById("SignoffNotifyText").innerHTML;
+        $.ajax({
+            url: "/Signoff/SignoffNotifyNum",
+            type: "POST",
+            dataType: "json",
+            success: function (response) {
+                if (response.success) {
+                    if (response.signoffnotifynum != 0) {
+                        document.getElementById("MemberText").innerHTML += '<label class="circle"><span>' + response.signoffnotifynum + '</span></label>';
+                        document.getElementById("SignoffNotifyText").innerHTML += '<label class="circle"><span>' + response.signoffnotifynum + '</span></label>';
+                    }
+                } else {
+                    alert(response.error);
+                }
+            },
+        });
+        var forms = document.getElementsByTagName('form');
+
+        for (var i = 0; i < forms.length; i++) {
+            forms[i].autocomplete = 'off';
+        }
+
+        var inputs = document.getElementsByTagName('input');
+
+        for (var i = 0; i < inputs.length; i++) {
+            inputs[i].autocomplete = 'off';
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,11 +1,18 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@{
+    Layout = null;
+    ViewBag.Title = "隱私權及安全政策Privacy & Security Policy";
+}
+
+<!DOCTYPE html>
+<html>
 @{
     string nonce = @Context.Items["CSPNonce"].ToString() as string;
 }
+
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" sizes="16x16" href="~/Img/Moda.ico">
     <title>GHG-數位產業自願性溫室氣體盤查系統</title>
     <link nonce="@nonce" rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -18,6 +25,7 @@
     <link nonce="@nonce" rel="stylesheet" href="~/css/OchiColor.css" />
     <link nonce="@nonce" rel="stylesheet" href="~/css/OchiLayout.css" />
     <link nonce="@nonce" rel="stylesheet" href="~/css/OchiRWD.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/prclayout.css" />
     <link nonce="@nonce" rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
 
     <style nonce="@nonce">
@@ -43,26 +51,31 @@
             white-space: nowrap;
         }
 
-        .circle span {
-            color: white;
-        }
-        head_div{
+            .circle span {
+                color: white;
+            }
+
+        head_div {
             margin-right: 30px;
             flex-grow: 0;
         }
     </style>
+
+    <link nonce="@nonce" rel="stylesheet" href="~/css/error-pages.css" />
+    <link nonce="@nonce" rel="stylesheet" href="~/css/error-style.css" />
 </head>
-<body class='padding-150'>
+
+<body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                @if (Context.Session.GetString("Permissions") == "1")
+                @if (Context.Session.GetString("Account") != null)
                 {
-                    <a class="navbar-brand" asp-area="" asp-controller="MemberMangment" asp-action="index"><img src='/Img/logo.png'></a>
+                    <a class="navbar-brand" asp-area="" asp-controller="Organize" asp-action="Details"><img src='/Img/logo.png'></a>
                 }
                 else
                 {
-                    <a class="navbar-brand" asp-area="" asp-controller="Organize" asp-action="Details"><img src='/Img/logo.png'></a>
+                    <a class="navbar-brand" asp-area="" asp-controller="Member" asp-action="Login"><img src='/Img/logo.png'></a>
                 }
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -75,22 +88,6 @@
                         <button id="largeFont">A+</button>
                     </div>
                     <ul class="navbar-nav  ml-auto">
-
-                        @if (Context.Session.GetString("Permissions") == "0" || Context.Session.GetString("Permissions") == "1")
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Organize" asp-action="Details">盤查表</a>
-                            </li>
-                        }
-                        @if (Context.Session.GetString("Permissions") == "1" )
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Coefficient" asp-action="EnergyUse">係數設定</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="MemberMangment" asp-action="index">會員管理</a>
-                            </li>
-                        }
                         <li class="nav-item dropdown">
 
                             <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -108,13 +105,6 @@
                                     </label>
                                 }
                             </a>
-                            @if (Context.Session.GetString("AccountId") == null && Context.Request.Path != "/Member/ModaLogin" && Context.Request.Path != "/Member/Logout" && Context.Request.Path != "/Member/Login" && Context.Request.Path != "/Member/Register" && Context.Request.Path != "" && Context.Request.Path != "/Member/ForgetPwd")
-                            {
-                                <script nonce="@nonce">
-                                    alert("請先登入");
-                                    window.location.href = "/Member/Login";
-                                </script>
-                            }
                             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 @if (Context.Session.GetString("AccountId") == null)
                                 {
@@ -124,9 +114,11 @@
                                 else
                                 {
                                     <li><a class="dropdown-item" href="/Member/Member">會員基本資料</a></li>
-                                    @if (Context.Session.GetString("LoginType") == "Home")
+                                    <li><a class="dropdown-item" href="/Member/EditPassword">修改密碼</a></li>
+                                    @if (Context.Session.GetString("LoginType") == "microsoft")
                                     {
-                                        <li><a class="dropdown-item" href="/Member/EditPassword">修改密碼</a></li>
+                                        <li><a id="SignoffNotifyText" class="dropdown-item" href="/SignOff/SignoffNotify">通知</a></li>
+
                                     }
                                     <li><a class="dropdown-item" href="/Member/Logout">登出</a></li>
                                 }
@@ -134,30 +126,40 @@
                             </ul>
                         </li>
                     </ul>
-
                 </div>
             </div>
         </nav>
     </header>
     <div class="site-content">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        <div role="main" class="pb-3">
+            <div id="wrapper" class="error-page">
+                <div class="error-box">
+                    <div class="left-align">
+                        <div class="article1 cpArticle">
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+                            <br>
+                            <h2>政府網站資料開放宣告</h2>
+                            <p>為利各界廣為利用網站資料，「數位發展部全球資訊網」刊載之所有資料與素材，其得受著作權保護之範圍，採<a href="https://creativecommons.org/publicdomain/zero/1.0/legalcode.zh-hant" target="_blank" title="CC0 v1.0 (另開新視窗)">「公眾領域貢獻宣告」（CC0 1.0）</a> 發布。</p>
+                           
+                            <br>
+                            &nbsp;
+                            <p></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    @*    <footer class="border-top footer text-muted">
-    <div class="container">
-    &copy; 2023 - Project - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-    </div>
-    </footer>*@
-
-
+    <!-- ============================================================== -->
+    <!-- All Required js -->
+    <!-- ============================================================== -->
     <script nonce="@nonce" src="~/lib/jquery/dist/jquery.min.js"></script>
     <script nonce="@nonce" src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script nonce="@nonce" src="~/lib/exceljs/exceljs.js"></script>
     <script nonce="@nonce" src="~/js/site.js" asp-append-version="true"></script>
-    <script nonce="@nonce" src="~/js/site1.js" asp-append-version="true"></script>
-    <script nonce="@nonce" charset="utf-8" src="~/js/Organize.js" asp-append-version="true"></script>
-
     <script nonce="@nonce" src="~/js/OutputExcel.js" asp-append-version="true"></script>
     <script nonce="@nonce" src="~/js/OutputCsv.js" asp-append-version="true"></script>
     <script nonce="@nonce" src="~/js/OutputJson.js" asp-append-version="true"></script>
@@ -173,6 +175,39 @@
     <script nonce="@nonce" type="text/javascript" src="~/js/jsgrid/jsgrid-fr.js"></script>
     <script nonce="@nonce" type="text/javascript" src="~/lib/layer/layer.js"></script>
     <script nonce="@nonce" type="text/javascript" src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    <script nonce="@nonce">
+        var OriginalMemberText;//保留初始文字，SignoffNotify裡面呼叫
+        var OriginalSignoffNotifyText;
+        OriginalMemberText = document.getElementById("MemberText").innerHTML;
+        OriginalSignoffNotifyText = document.getElementById("SignoffNotifyText").innerHTML;
+        $.ajax({
+            url: "/Signoff/SignoffNotifyNum",
+            type: "POST",
+            dataType: "json",
+            success: function (response) {
+                if (response.success) {
+                    if (response.signoffnotifynum != 0) {
+                        document.getElementById("MemberText").innerHTML += '<label class="circle"><span>' + response.signoffnotifynum + '</span></label>';
+                        document.getElementById("SignoffNotifyText").innerHTML += '<label class="circle"><span>' + response.signoffnotifynum + '</span></label>';
+                    }
+                } else {
+                    alert(response.error);
+                }
+            },
+        });
+        var forms = document.getElementsByTagName('form');
+
+        for (var i = 0; i < forms.length; i++) {
+            forms[i].autocomplete = 'off';
+        }
+
+        var inputs = document.getElementsByTagName('input');
+
+        for (var i = 0; i < inputs.length; i++) {
+            inputs[i].autocomplete = 'off';
+        }
+
+    </script>
 </body>
+
 </html>

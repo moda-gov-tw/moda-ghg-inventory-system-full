@@ -35,7 +35,16 @@
         <form id="form2" style="display:none">
             
             <div class="form-group">
-                <label class="control-label">新密碼</label><br />(規則:須包含1符號+1大寫英+1小寫英+1數字，最少6字元)
+                <label class="control-label">新密碼</label>
+                <label class="tooltips">
+                    @*懸浮文字文字*@
+                    <img src="~/Img/QuestionMark.png" class="QuestionMarkSmall" />
+
+                    <span class="tooltips-text">
+                        規則:須包含1符號+1大寫英+1小寫英+1數字，最少6字元，最多18字元)
+                    </span>
+
+                </label>
                 <input id="newpassword" name="newpassword" type="password" class="form-control" autocomplete="off">
             </div>
             <div class="form-group">

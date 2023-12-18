@@ -6,6 +6,7 @@
 }
 @section Scripts{
     <script nonce="@nonce">
+        var status = "@Html.Raw(ViewBag.BasicDataStatus)".toString();
         var url = new URL(window.location.href);
         var id = url.pathname.split('/').pop(); // 從 URL 的路徑部分中獲取最後一個值作為 id
 
@@ -208,8 +209,9 @@
 
             newAddressDiv.appendChild(newAddressValidation);
             newAddressDiv.appendChild(space2);
-
-            newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            if (("@Html.Raw(ViewBag.BasicDataStatus)".toString() == "盤查中" || "@Html.Raw(ViewBag.BasicDataStatus)".toString() == "	不通過")) {
+                newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            }
             addressesDiv.appendChild(newAddressDiv);
             addressCounter++;
         }
@@ -294,8 +296,9 @@
 
             newAddressDiv.appendChild(newAddressValidation);
             newAddressDiv.appendChild(space2);
-
-            newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            if (("@Html.Raw(ViewBag.BasicDataStatus)".toString() == "盤查中" || "@Html.Raw(ViewBag.BasicDataStatus)".toString() == "	不通過")) {
+                newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            }
             addressesDiv.appendChild(newAddressDiv);
             factoryoutsideaddressCounter++;
         }
@@ -380,8 +383,9 @@
 
             newAddressDiv.appendChild(newAddressValidation);
             newAddressDiv.appendChild(space2);
-
-            newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            if (("@Html.Raw(ViewBag.BasicDataStatus)".toString() == "盤查中" || "@Html.Raw(ViewBag.BasicDataStatus)".toString() == "	不通過")) {
+                newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            }
             addressesDiv.appendChild(newAddressDiv);
             factoryInDeductionaddressCounter++;
         }
@@ -464,14 +468,39 @@
 
             newAddressDiv.appendChild(newAddressValidation);
             newAddressDiv.appendChild(space2);
-
-            newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            if (("@Html.Raw(ViewBag.BasicDataStatus)".toString() == "盤查中" || "@Html.Raw(ViewBag.BasicDataStatus)".toString() == "	不通過")) {
+                newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+            }
             addressesDiv.appendChild(newAddressDiv);
             PersonCounter++;
         }
     };
 
 
+    if ("@Html.Raw(ViewBag.BasicDataStatus)".toString() == "通過" || "@Html.Raw(ViewBag.BasicDataStatus)".toString() == "待簽核") {
+        document.addEventListener("DOMContentLoaded", function () {
+            // 获取所有的<input>和<select>元素
+            var inputElements = document.querySelectorAll("input:not([name='search'])");
+            // 将所有<input>和<select>元素的disabled属性设置为true
+            for (var i = 0; i < inputElements.length; i++) {
+                inputElements[i].disabled = true;
+            }
+
+            // 获取所有的<input>和<select>元素
+            var add_dress = document.querySelector("#BasicData > div > div:nth-child(3) > div:nth-child(1) > div > button");
+            add_dress.hidden = true;
+            var add_factory = document.querySelector("#BasicData > div > div:nth-child(4) > div:nth-child(1) > div > button");
+            add_factory.hidden = true;
+            var add_person_btn = document.querySelector("#BasicData > div > div:nth-child(6) > div:nth-child(1) > div > button");
+            add_person_btn.hidden = true;
+            var add_factoryIn_btn = document.querySelector("#BasicData > div > div:nth-child(5) > div:nth-child(1) > div > button")
+            add_factoryIn_btn.hidden = true;
+            var delete_btn = document.querySelectorAll(".btn-danger");
+            for (var i = 0; i < personList_btn.length; i++) {
+                delete_btn[i].hidden = true;
+            }
+        });
+    }
 </script>
 
 <script nonce="@nonce">
@@ -544,8 +573,9 @@
 
         newAddressDiv.appendChild(newAddressValidation);
         newAddressDiv.appendChild(space2);
-
-        newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        if (("@Html.Raw(ViewBag.BasicDataStatus)".toString() == "盤查中" || "@Html.Raw(ViewBag.BasicDataStatus)".toString() == "	不通過")) {
+            newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        }
         addressesDiv.appendChild(newAddressDiv);
         addressCounter++;
     }
@@ -648,8 +678,9 @@
 
         newAddressDiv.appendChild(newAddressValidation);
         newAddressDiv.appendChild(space2);
-
-        newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        if (("@Html.Raw(ViewBag.BasicDataStatus)".toString() == "盤查中" || "@Html.Raw(ViewBag.BasicDataStatus)".toString() == "	不通過")) {
+            newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        }
         addressesDiv.appendChild(newAddressDiv);
         factoryoutsideaddressCounter++;
     }
@@ -752,8 +783,9 @@
 
         newAddressDiv.appendChild(newAddressValidation);
         newAddressDiv.appendChild(space2);
-
-        newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        if (("@Html.Raw(ViewBag.BasicDataStatus)".toString() == "盤查中" || "@Html.Raw(ViewBag.BasicDataStatus)".toString() == "	不通過")) {
+            newAddressDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        }
         addressesDiv.appendChild(newAddressDiv);
         factoryInDeductionaddressCounter++;
     }
@@ -852,8 +884,9 @@
 
         newPersonDiv.appendChild(newPersonValidation);
         newPersonDiv.appendChild(space2);
-
-        newPersonDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        if (!("@Html.Raw(ViewBag.BasicDataStatus)".toString() == "通過" || "@Html.Raw(ViewBag.BasicDataStatus)".toString() == "待簽核")) {
+            newPersonDiv.appendChild(deleteButton); // 新增的刪除按鈕
+        }
         PersonDiv.appendChild(newPersonDiv);
         PersonCounter++;
     }

@@ -81,6 +81,10 @@
                 });
             });
         });
+
+
+    
+
     </script>
 }
 
@@ -123,15 +127,6 @@
                         </div>
                     </div>
                 </form>
-
-                <div class="container d-flex justify-content-center">
-                    @*bootstrap樣式*@
-
-                </div>
-                <div class="container d-flex justify-content-center mb-2">
-                    @*bootstrap樣式*@
-
-                </div>
             </div>
         </div>
     </div>
@@ -145,7 +140,7 @@
             <a href="https://page.line.me/?accountId=caas" target="_blank"> <img src="/Img/CService.jpg" style="width:100%; max-height:80px; max-width:200px;" alt="減碳菜單" /></a>
             <a href="https://ghg.tgpf.org.tw/CVResources/CVResources_more?id=0b8ff6b5268b4b18a1071e7c393a79c0" target="_blank"> <img src="/Img/carbonez.png" style="width:100%; max-height:80px; max-width:200px;" alt="碳估算工具" /></a>
             <a href="https://www.moenv.gov.tw/" target="_blank"> <img src="/Img/moenv.png" style="width:100%; max-height:80px; max-width:200px;" alt="環境部" /></a>
-            <a href="https://ghgregistry.moenv.gov.tw/lepa_ghg/" target="_blank"> <img src="/Img/moenv_ghg.png" style="width:100%; max-height:80px; max-width:200px;" alt="環境部GHG平台" /></a>
+            <a href="https://ghgregistry.moenv.gov.tw/epa_ghg/" target="_blank"> <img src="/Img/moenv_ghg.png" style="width:100%; max-height:80px; max-width:200px;" alt="環境部GHG平台" /></a>
 
             <a href="https://top.energypark.org.tw/topfirm_test/Services" target="_blank"> <img src="/Img/energypark.jpg" style="width:100%; max-height:80px; max-width:200px;" alt="節電服務團" /></a>
             <a href="https://smepass.gov.tw/SMEAExtranet/index" target="_blank"> <img src="/Img/smepass.gif" style="width:100%; max-height:80px; max-width:220px;" alt="smepass" /></a>
@@ -166,7 +161,7 @@
             <div class="row">
                 <div class="col-12 col-md">
                     <div class="ftBtmLogo mb-3">
-                        <a class="d-inline-block" href="/index.html">
+                        <a class="d-inline-block" target="_blank" title="Moda (另開新視窗)" href="https://moda.gov.tw/">
                             <!-- 淺色版面的logo -->
                             <img class="mw-100 lightShow" src="/Img/logo.svg" width="340" height="56" alt="moda — 數位發展部 Ministry of Digital Affairs">
 
@@ -181,10 +176,10 @@
                 <div class="col-12 col-md text-md-end">
                     <ul class="listSlash list-unstyled list-inline">
                         <li class="list-inline-item">
-                            <a class="text-decoration-none" href="/announcement/privacy/949.html" title="隱私權及網站安全政策" target="_self">隱私權及網站安全政策</a>
+                            <a class="text-decoration-none" href="/Home/Privacy" title="隱私權及網站安全政策" target="_self">隱私權及網站安全政策</a>
                         </li>
                         <li class="list-inline-item">
-                            <a class="text-decoration-none" href="/announcement/publicdeclare/951.html" title="政府網站資料開放宣告" target="_self">政府網站資料開放宣告</a>
+                            <a class="text-decoration-none" href="/Home/Open" title="政府網站資料開放宣告" target="_self">政府網站資料開放宣告</a>
                         </li>
                     </ul>
                     <ul class="listAdd list-unstyled list-inline">
@@ -193,8 +188,8 @@
                         <li class="list-inline-item ms-0 ms-md-2 me-2 me-md-0">傳真電話：<a class="text-decoration-none" href="tel:02-2380-0791" title="數位發展部傳真電話">02-2380-0791</a></li>
                         <li class="list-inline-item ms-0 ms-md-2 me-2 me-md-0">民意信箱：<a class="text-decoration-none" href="https://www-mailbox.moda.gov.tw/" target="_blank" title="民意信箱（另開新視窗）">www-mailbox.moda.gov.tw</a></li>
                         <br />
-                        <li class="list-inline-item ms-0 ms-md-2 me-2 me-md-0">Github源碼庫<a class="text-decoration-none" href="Github" title=""></a></li>
-                        <li class="list-inline-item ms-0 ms-md-2 me-2 me-md-0">官網原始碼<a class="text-decoration-none" href="Github" title=""></a></li>
+                        <li class="list-inline-item ms-0 ms-md-2 me-2 me-md-0"><a class="text-decoration-none" href="https://github.com/moda-gov-tw/moda-ghg-inventory-system-frontend" target="_blank" title="Github源碼庫（另開新視窗）">Github源碼庫</a></li>
+                        <li class="list-inline-item ms-0 ms-md-2 me-2 me-md-0"><a class="text-decoration-none" href="https://github.com/moda-gov-tw/moda-ghg-inventory-system-full" target="_blank" title="官網原始碼（另開新視窗）">官網原始碼</a></li>
                     </ul>
                     <div class="col-md-auto">
                     </div>
@@ -205,37 +200,10 @@
 </div>
 
 <script nonce="@nonce">
-    const citizenCardButton = document.getElementById('citizenCardButton');
-    const temporaryPasswordButton = document.getElementById('temporaryPasswordButton');
-    const citizenCardLogin = document.getElementById('citizenCardLogin');
-    const temporaryPasswordLogin = document.getElementById('temporaryPasswordLogin');
-    document.getElementById('info').style.color = "red";
-    function selectButton(buttonElement) {
-        // 移除所有按鈕的選中樣式
-        citizenCardButton.classList.remove('active');
-        temporaryPasswordButton.classList.remove('active');
-
-        // 加上選中樣式至目前按鈕
-        buttonElement.classList.add('active');
-    }
-
-    citizenCardButton.addEventListener('click', function () {
-        citizenCardLogin.style.display = 'block';
-        temporaryPasswordLogin.style.display = 'none';
-
-        selectButton(citizenCardButton);
-    });
-
-    temporaryPasswordButton.addEventListener('click', function () {
-        myLoad();
-        citizenCardLogin.style.display = 'none';
-        temporaryPasswordLogin.style.display = 'block';
-
-        selectButton(temporaryPasswordButton);
-    });
 
     function ReturnLogin() {
         // 替换下面的 URL 为你要跳转的网页的 URL
         window.location.href = "Login";
     }
 </script>
+

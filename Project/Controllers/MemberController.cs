@@ -50,6 +50,7 @@ namespace Project.Controllers
             var Email = collection["Email"].FirstOrDefault();
             var captchaCode = collection["captchaCode"].FirstOrDefault();
             var verId = collection["verId"].FirstOrDefault();
+
             var repasswd = rePasswd;
 
             var a = _MyDbContext.Members.Any(a => a.Account == account);
@@ -164,12 +165,7 @@ namespace Project.Controllers
             string? passwd = collection["Passwd"];
             try
             {
-                //var a = _MyDbContext.Members.Where(x => x.Account == account && x.Passwd == MD5Encrypt(passwd));
-                //if (a.Count() == 0)
-                //{
-                //    return Error("帳號或密碼錯誤");
 
-                //}
                 //驗證圖形驗證碼
                 if (!string.Equals(captchaCode, HttpContext.Session.GetString("CaptchaCode"), StringComparison.OrdinalIgnoreCase))
                 {
@@ -324,11 +320,13 @@ namespace Project.Controllers
             }
 
         }
+
         public ActionResult Logout()
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Login", "Member");
         }
+
         public ActionResult Member()
         {
             var model = _MyDbContext.Members.FirstOrDefault(a => a.MemberId.ToString() == AccountId());
@@ -358,7 +356,7 @@ namespace Project.Controllers
             model.Department = collection["Department"];
             model.OfficeLocation = collection["OfficeLocation"];
             model.UserType = collection["UserType"];
-            model.LoginType = "Home";
+            model.LoginType = model.LoginType != "Home" ? model.LoginType : "Home";
             _MyDbContext.Members.Update(model);
             _MyDbContext.SaveChanges();
 
@@ -598,6 +596,19 @@ namespace Project.Controllers
                 if (user == null)
                 {
                     return Error("查無此用戶");
+                }
+
+                var codeTF = _MyDbContext.VerifyCodes.Any(a => a.Number == email.ToString());
+
+                if (codeTF)
+                {
+                    var code = _MyDbContext.VerifyCodes.AsQueryable().OrderByDescending(a=>a.Id).First((a => a.Number == email.ToString()));
+
+                    DateTime currentTime = DateTime.Now;
+                    if (currentTime <= code.ExpireTime)
+                    {
+                        return Error("已經發送了驗證碼");
+                    }
                 }
 
                 VerifyCode model = new()

@@ -99,30 +99,33 @@
     td {
         text-align: left;
     }
-    table{
+
+    table {
         width: 100%;
     }
 </style>
 <div class="table-container">
-<table style="width:100%" class="table">
-    <thead>
-    <tr>
-        <td>名稱</td>
-        <td>上傳日期</td>
-        <td>操作</td>
+    <table style="width:100%" class="table">
+        <thead>
+            <tr>
+                <td>名稱</td>
+                <td>上傳日期</td>
+                <td>操作</td>
 
-    </tr></thead>
-    <tbody>
-    @foreach (var item in Model.EvidenceFileManage)
-    {
-        <tr>
-            <td> <a href="~/@Project.Controllers.CommonController.HtmlFileSave.HtmlPath/@ViewBag.Path/@item.WhereForm/@item.FileName" download>@item.FileName</a></td>@*下載路徑*@
-            <td>@item.Time</td>
-            <td><a asp-action="Delete" asp-route-BasicId="@item.BasicId" asp-route-ItemId="@item.ItemId" asp-route-WhereForm="@item.WhereForm" asp-route-FileName="@item.FileName">刪除</a></td> 
-        </tr>
-    }
-</tbody>
-</table>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.EvidenceFileManage)
+            {
+
+                <tr>
+                    <td> <a href="~/@Project.Controllers.CommonController.HtmlFileSave.HtmlPath/@ViewBag.Path/@item.WhereForm/@item.FileName" download>@item.FileName</a></td>@*下載路徑*@
+                    <td>@item.Time</td>
+                    <td><a asp-action="Delete" asp-route-BasicId="@item.BasicId" asp-route-ItemId="@item.ItemId" asp-route-WhereForm="@item.WhereForm" asp-route-FileName="@item.FileName">刪除</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
 
 
@@ -133,8 +136,8 @@
         <input type="text" value="@ViewBag.ItemId" name="ItemId" style="display:none" />
         <input type="text" value="@ViewBag.WhereForm" name="WhereForm" style="display:none" />
         <label>
-                <input multiple type="file" name="EvidenceFile" id="EvidenceFile" />
-                <input type="submit" value="上傳" class="genbtn" />         
+            <input multiple type="file" name="EvidenceFile" id="EvidenceFile" />
+            <input type="submit" value="上傳" class="genbtn" />
         </label>
     </div>
 
