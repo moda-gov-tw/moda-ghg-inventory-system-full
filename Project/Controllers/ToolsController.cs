@@ -256,7 +256,10 @@ namespace Project.Controllers
 
                     foreach (var item in Evidencefilemanages)
                     {
-                        System.IO.File.Delete(directoryPath + "/" + item.FileName);
+                        if (System.IO.File.Exists(directoryPath + "/" + item.FileName))
+                        {
+                            System.IO.File.Delete(directoryPath + "/" + item.FileName);
+                        }
                     }
 
                     //刪除能源使用，及詳細資料的3個table
@@ -547,7 +550,10 @@ namespace Project.Controllers
                     string directoryPath = FileSave.Path + AccountId() + "/" + a.BasicId + "/冷媒逸散/有進行冷媒填充";//檔案路徑
                     foreach (var item in Evidencefilemanages)
                     {
-                        System.IO.File.Delete(directoryPath + "/" + item.FileName);
+                        if (System.IO.File.Exists(directoryPath + "/" + item.FileName))
+                        {
+                            System.IO.File.Delete(directoryPath + "/" + item.FileName);
+                        }
                     }
                     //刪除2個table
                     _MyDbContext.RefrigerantHaves.Remove(RefrigerantHaves);
@@ -682,7 +688,10 @@ namespace Project.Controllers
                     string directoryPath = FileSave.Path + AccountId() + "/" + a.BasicId + "/冷媒逸散/無進行冷媒填充";//檔案路徑
                     foreach (var item in Evidencefilemanages)
                     {
-                        System.IO.File.Delete(directoryPath + "/" + item.FileName);
+                        if (System.IO.File.Exists(directoryPath + "/" + item.FileName))
+                        {
+                            System.IO.File.Delete(directoryPath + "/" + item.FileName);
+                        }
                     }
                     //刪除2個table
                     _MyDbContext.RefrigerantNones.Remove(RefrigerantNones);
@@ -828,7 +837,10 @@ namespace Project.Controllers
 
                     foreach (var item in Evidencefilemanages)
                     {
-                        System.IO.File.Delete(directoryPath + "/" + item.FileName);
+                        if (System.IO.File.Exists(directoryPath + "/" + item.FileName))
+                        {
+                            System.IO.File.Delete(directoryPath + "/" + item.FileName);
+                        }
                     }
                     _MyDbContext.Fireequipments.Remove(Fireequipments);
 
@@ -1001,7 +1013,10 @@ namespace Project.Controllers
                     string directoryPath = FileSave.Path + AccountId() + "/" + a.BasicId + "/廢棄物處理";//檔案路徑
                     foreach (var item in Evidencefilemanages)
                     {
-                        System.IO.File.Delete(directoryPath + "/" + item.FileName);
+                        if (System.IO.File.Exists(directoryPath + "/" + item.FileName))
+                        {
+                            System.IO.File.Delete(directoryPath + "/" + item.FileName);
+                        }
                     }
                     //刪除能源使用，及詳細資料的3個table
                     _MyDbContext.DumptreatmentOutsourcings.Remove(DumptreatmentOutsourcings);

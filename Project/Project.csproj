@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\userfile\Organize\" />
+    <Folder Include="wwwroot\userfile\" />
   </ItemGroup>
 
 </Project>

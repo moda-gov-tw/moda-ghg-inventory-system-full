@@ -30,6 +30,10 @@ namespace Project.Controllers
                 };
 
                 var organize = _MyDbContext.Organizes.Where(a => a.BasicId == BasicId && a.Account == AccountId()).FirstOrDefault();
+                if (organize != null)
+                {
+                    ViewBag.Status =organize.Status;
+                }
                 return View(viewModel);
 
             }

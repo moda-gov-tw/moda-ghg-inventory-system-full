@@ -1,6 +1,7 @@
 ﻿using Project.Common;
 using Project.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using NPOI.Util;
 using Project.Common;
 using static Project.Controllers.CommonController;
@@ -66,7 +67,16 @@ namespace Project.Controllers
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} ---------開始匯入資料開始---------");
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 資料匯入開始");
 
-                var EnergyUseJsonData = JSONImport.JSONImports(filePath);
+                JArray EnergyUseJsonData;
+                try
+                {
+                    EnergyUseJsonData = JSONImport.JSONImports(filePath);
+                }
+                catch (Exception)
+                {
+                    return Error("Json格式錯誤"); // 或其他適當的錯誤訊息
+                }
+
                 List<string> errorList = new List<string>();
                 if (EnergyUseJsonData == null)
                 {
@@ -225,14 +235,14 @@ namespace Project.Controllers
                         for (int j = 0; j < monthcount + 1; j += SelMonth)
                         {
 
-                            var StartTime = data[year + "/" + month + "開始日期"].ParseToTWDate("1");
+                            var StartTime = data[year + "/" + month + "起始日期"].ParseToTWDate("1");
                             var EndTime = data[year + "/" + month + "結束日期"].ParseToTWDate("1");
                             var Num = data[year + "/" + month + "數值"].ParseToDecimal(-1);
                             var NumCondition = data[year + "/" + month + "數值"].ParseToDecimal();//數值條件
 
                             if (StartTime == "1")
                             {
-                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "開始日期" + "填寫不正確)");
+                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "起始日期" + "填寫不正確)");
                             }
                             if (EndTime == "1")
                             {
@@ -248,7 +258,7 @@ namespace Project.Controllers
                             }
                             if (Num != null && (StartTime == "" || EndTime == ""))
                             {
-                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "缺少開始或結束時間)");
+                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "缺少起始或結束時間)");
                             }
 
                             month += SelMonth;
@@ -383,7 +393,7 @@ namespace Project.Controllers
                         {
 
                             var DateTimes = year + " / " + month;
-                            var StartTime = data[year + "/" + month + "開始日期"].ParseToTWDate("1");
+                            var StartTime = data[year + "/" + month + "起始日期"].ParseToTWDate("1");
                             var EndTime = data[year + "/" + month + "結束日期"].ParseToTWDate("1");
                             var Num = data[year + "/" + month + "數值"].ParseToDecimal(-1);
                             DIntervalusetotal = new DIntervalusetotal()
@@ -565,7 +575,15 @@ namespace Project.Controllers
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} ---------開始匯入資料開始---------");
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 資料匯入開始");
 
-                var ResourceUseJsonData = JSONImport.JSONImports(filePath);
+                JArray ResourceUseJsonData;
+                try
+                {
+                    ResourceUseJsonData = JSONImport.JSONImports(filePath);
+                }
+                catch (Exception)
+                {
+                    return Error("Json格式錯誤"); // 或其他適當的錯誤訊息
+                }
                 List<string> errorList = new List<string>();
                 if (ResourceUseJsonData == null)
                 {
@@ -699,14 +717,14 @@ namespace Project.Controllers
                         for (int j = 0; j < monthcount + 1; j += SelMonth)
                         {
 
-                            var StartTime = data[year + "/" + month + "開始日期"].ParseToTWDate("1");
+                            var StartTime = data[year + "/" + month + "起始日期"].ParseToTWDate("1");
                             var EndTime = data[year + "/" + month + "結束日期"].ParseToTWDate("1");
                             var Num = data[year + "/" + month + "數值"].ParseToDecimal(-1);
                             var NumCondition = data[year + "/" + month + "數值"].ParseToDecimal();//數值條件
 
                             if (StartTime == "1")
                             {
-                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "開始日期" + "填寫不正確)");
+                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "起始日期" + "填寫不正確)");
                             }
                             if (EndTime == "1")
                             {
@@ -722,7 +740,7 @@ namespace Project.Controllers
                             }
                             if (Num != null && (StartTime == "" || EndTime == ""))
                             {
-                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "缺少開始或結束時間)");
+                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "缺少起始或結束時間)");
                             }
 
                             month += SelMonth;
@@ -763,11 +781,8 @@ namespace Project.Controllers
                         var Datasource = data["數據來源"]?.ParseToString();
 
                         var Remark = data["備註"]?.ParseToString();
-                        var BeforeUnit = data["轉換前單位"]?.ParseToString();
-                        var ConvertNum = data["單位轉換之值"]?.ParseToDecimal(-1);
-                        var AfertUnit = data["轉換後單位"]?.ParseToString();
+                        var Unit = data["單位"]?.ParseToString();
                         var DistributeRatio = data["分配比率"]?.ParseToDecimal(-1);
-
                         var Resourceuse = new Resourceuse()
                         {
                             BasicId = BasicId,
@@ -777,9 +792,7 @@ namespace Project.Controllers
                             EquipmentLocation = EquipmentLocation,
                             SupplierId = _MyDbContext.Suppliermanages.FirstOrDefault(a => a.SupplierName == SupplierName && a.Account == AccountId()) != null ? _MyDbContext.Suppliermanages.FirstOrDefault(a => a.SupplierName == SupplierName && a.Account == AccountId()).Id : null,
                             Remark = Remark,
-                            BeforeUnit = _MyDbContext.Selectdata.FirstOrDefault(a => a.Type == "Unit" && a.Name == BeforeUnit) != null ? _MyDbContext.Selectdata.FirstOrDefault(a => a.Type == "Unit" && a.Name == BeforeUnit).Code.ToString() : null,
-                            ConvertNum = ConvertNum,
-                            AfertUnit = _MyDbContext.Selectdata.FirstOrDefault(a => a.Type == "Unit" && a.Name == AfertUnit) != null ? _MyDbContext.Selectdata.FirstOrDefault(a => a.Type == "Unit" && a.Name == AfertUnit).Code.ToString() : null,
+                            BeforeUnit = _MyDbContext.Selectdata.FirstOrDefault(a => a.Type == "Unit" && a.Name == Unit) != null ? _MyDbContext.Selectdata.FirstOrDefault(a => a.Type == "Unit" && a.Name == Unit).Code.ToString() : null,
                             DistributeRatio = DistributeRatio,
 
                         };
@@ -818,7 +831,7 @@ namespace Project.Controllers
                         DIntervalusetotal = new DIntervalusetotal()
                         {
                             BindId = ResourceUseId,
-                            Num = _MyDbContext.Selectdata.FirstOrDefault(a => a.Type == "Unit" && a.Name == BeforeUnit) != null ? _MyDbContext.Selectdata.FirstOrDefault(a => a.Type == "Unit" && a.Name == BeforeUnit).Code.ToString() : null,
+                            Num = _MyDbContext.Selectdata.FirstOrDefault(a => a.Type == "Unit" && a.Name == Unit) != null ? _MyDbContext.Selectdata.FirstOrDefault(a => a.Type == "Unit" && a.Name == Unit).Code.ToString() : null,
                             Type = "Unit",
                             BindWhere = "ResourceUse",
                             ArraySort = 0,
@@ -862,7 +875,7 @@ namespace Project.Controllers
                         {
 
                             var DateTimes = year + " / " + month;
-                            var StartTime = data[year + "/" + month + "開始日期"].ParseToTWDate("1");
+                            var StartTime = data[year + "/" + month + "起始日期"].ParseToTWDate("1");
                             var EndTime = data[year + "/" + month + "結束日期"].ParseToTWDate("1");
                             var Num = data[year + "/" + month + "數值"].ParseToDecimal(-1);
                             DIntervalusetotal = new DIntervalusetotal()
@@ -939,7 +952,7 @@ namespace Project.Controllers
                             Resourceuses.AfertTotal = Math.Round(Convert.ToDecimal(total), 2);
                         }
                         var EditLog = _MyDbContext.Organizes.Where(a => a.BasicId == BasicId && a.Account == AccountId()).First();
-                        EditLog.EditLog += ResourceUseLog("新增", ResourceName, EquipmentName, EquipmentLocation, Resourceuses.AfertTotal, AfertUnit);
+                        EditLog.EditLog += ResourceUseLog("新增", ResourceName, EquipmentName, EquipmentLocation, Resourceuses.AfertTotal, Unit);
                         _MyDbContext.SaveChanges(); // 儲存變更至資料庫
                     }
 
@@ -1041,7 +1054,17 @@ namespace Project.Controllers
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} ---------開始匯入資料開始---------");
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 資料匯入開始");
 
-                var RefrigerantNoneJsonData = JSONImport.JSONImports(filePath);
+
+                JArray RefrigerantNoneJsonData;
+                try
+                {
+                    RefrigerantNoneJsonData = JSONImport.JSONImports(filePath);
+                }
+                catch (Exception)
+                {
+                    return Error("Json格式錯誤"); // 或其他適當的錯誤訊息
+                }
+
                 List<string> errorList = new List<string>();
                 if (RefrigerantNoneJsonData == null)
                 {
@@ -1252,7 +1275,17 @@ namespace Project.Controllers
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} ---------開始匯入資料開始---------");
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 資料匯入開始");
 
-                var RefrigerantHaveJsonData = JSONImport.JSONImports(filePath);
+                JArray RefrigerantHaveJsonData;
+                try
+                {
+                    RefrigerantHaveJsonData = JSONImport.JSONImports(filePath);
+                }
+                catch (Exception)
+                {
+                    return Error("Json格式錯誤"); // 或其他適當的錯誤訊息
+                }
+
+
                 List<string> errorList = new List<string>();
                 if (RefrigerantHaveJsonData == null)
                 {
@@ -1455,7 +1488,16 @@ namespace Project.Controllers
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} ---------開始匯入資料開始---------");
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 資料匯入開始");
 
-                var FireequipmentJsonData = JSONImport.JSONImports(filePath);
+                JArray FireequipmentJsonData;
+                try
+                {
+                    FireequipmentJsonData = JSONImport.JSONImports(filePath);
+                }
+                catch (Exception)
+                {
+                    return Error("Json格式錯誤"); // 或其他適當的錯誤訊息
+                }
+
                 List<string> errorList = new List<string>();
                 if (FireequipmentJsonData == null)
                 {
@@ -1759,7 +1801,15 @@ namespace Project.Controllers
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} ---------開始匯入資料開始---------");
                 result.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 資料匯入開始");
 
-                var WorkinghourJsonData = JSONImport.JSONImports(filePath);
+                JArray WorkinghourJsonData ;
+                try
+                {
+                    WorkinghourJsonData = JSONImport.JSONImports(filePath);
+                }
+                catch (Exception)
+                {
+                    return Error("Json格式錯誤"); // 或其他適當的錯誤訊息
+                }
                 List<string> errorList = new List<string>();
                 if (WorkinghourJsonData == null)
                 {
@@ -2090,14 +2140,14 @@ namespace Project.Controllers
                         for (int j = 0; j < monthcount + 1; j += SelMonth)
                         {
 
-                            var StartTime = data[year + "/" + month + "開始日期"].ParseToTWDate("1");
+                            var StartTime = data[year + "/" + month + "起始日期"].ParseToTWDate("1");
                             var EndTime = data[year + "/" + month + "結束日期"].ParseToTWDate("1");
                             var Num = data[year + "/" + month + "數值"].ParseToDecimal(-1);
                             var NumCondition = data[year + "/" + month + "數值"].ParseToDecimal();//數值條件
 
                             if (StartTime == "1")
                             {
-                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "開始日期" + "填寫不正確)");
+                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "起始日期" + "填寫不正確)");
                             }
                             if (EndTime == "1")
                             {
@@ -2113,7 +2163,7 @@ namespace Project.Controllers
                             }
                             if (Num != null && (StartTime == "" || EndTime == ""))
                             {
-                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "缺少開始或結束時間)");
+                                errorList.Add($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")} {file.FileName} 第{index + 1}行失敗，原因(" + year + "/" + month + "缺少起始或結束時間)");
                             }
 
                             month += SelMonth;
@@ -2248,7 +2298,7 @@ namespace Project.Controllers
                         {
 
                             var DateTimes = year + " / " + month;
-                            var StartTime = data[year + "/" + month + "開始日期"]?.ParseToTWDate("1");
+                            var StartTime = data[year + "/" + month + "起始日期"]?.ParseToTWDate("1");
                             var EndTime = data[year + "/" + month + "結束日期"]?.ParseToTWDate("1");
                             var Num = data[year + "/" + month + "數值"]?.ParseToDecimal(-1);
 

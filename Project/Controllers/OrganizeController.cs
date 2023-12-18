@@ -1,6 +1,7 @@
 ﻿using Project.Common;
 using Project.Models;
 using Project.Models.View;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -27,11 +28,6 @@ namespace Project.Controllers
         {
             try
             {
-                if (string.IsNullOrEmpty(HttpContext.Session.GetString("AccountId")))
-                {
-
-                }
-
 
                 int pageSize = 10; // 每頁顯示的項目數量
                 int pageNumber = (page ?? 1); // 當前頁數（如果未指定，預設為第1頁）
@@ -50,8 +46,17 @@ namespace Project.Controllers
                 {
                     a = a.Where(a => a.EndTime <= endtime.Value.Date);
                 }
-                var pagedList = a.OrderByDescending(a => a.Id).ToPagedList(pageNumber, pageSize);
-                return View(pagedList);
+                if (a.Any())
+                {
+                    var pagedList = a.OrderByDescending(a => a.Id).ToPagedList(pageNumber, pageSize);
+                    return View(pagedList);
+                }
+                else
+                {
+                    var pagedList = a.OrderByDescending(a => a.Id).ToPagedList(1, pageSize);
+                    return View(pagedList);
+                }
+
             }
             catch (Exception ex)
             {
@@ -125,8 +130,15 @@ namespace Project.Controllers
                                     Name = b.Name
                                 })
                             .ToList();
-                    string aaa = AccountId();
-
+                    string A_ID = AccountId();
+                    if (_MyDbContext.Basicdatas.FirstOrDefault(a => a.Account == A_ID && a.BasicId == id) == null)//不是填寫基本資料的人
+                    {
+                        ViewBag.BasicDataStatus = "待簽核";//設定不允許修改基本資料
+                    }
+                    else
+                    {
+                        ViewBag.BasicDataStatus = BasicDataStatus(id);
+                    }
 
                     ViewBag.factory = JsonConvert.SerializeObject(factory);
                     ViewBag.CheckFieldoutside = JsonConvert.SerializeObject(CheckFieldoutside);
@@ -363,16 +375,26 @@ namespace Project.Controllers
                     _MyDbContext.Basicdatas.Update(Basicdatas);
 
 
-                    var Organizes = _MyDbContext.Organizes.Where(a => a.BasicId == id).FirstOrDefault();
-                    Organizes.Inventory = collection["OrganName"];
-                    Organizes.StartTime = StartTime;
-                    Organizes.EndTime = EndTime;
-                    Organizes.UpdateTime = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
-                    Organizes.Status = "盤查中";
-                    _MyDbContext.Organizes.Update(Organizes);
+                    var Organizes = _MyDbContext.Organizes.Where(a => a.BasicId == id).ToList();
+
+                    var organizesToUpdate = _MyDbContext.Organizes.Where(a => a.BasicId == id).ToList();
+                    if (organizesToUpdate.Any())
+                    {
+                        foreach (var organize in organizesToUpdate)
+                        {
+                            organize.Inventory = collection["OrganName"];
+                            organize.StartTime = StartTime;
+                            organize.EndTime = EndTime;
+                            organize.UpdateTime = DateTime.Parse(DateTime.Now.ToString("yyyy-MM-dd"));
+                            organize.Status = "盤查中";
+                            _MyDbContext.Organizes.Update(organize);
+                        }
+                    }
+                    // 提交更改到資料庫
+                    _MyDbContext.SaveChanges();
 
 
-                    //_MyDbContext.BasicdataFactoryaddresses.RemoveRange(_MyDbContext.BasicdataFactoryaddresses.Where(a => a.BasicId == id).ToList());
+                    //_MyDbContext.BasicdataFactoryaddresses.RemoveRzange(_MyDbContext.BasicdataFactoryaddresses.Where(a => a.BasicId == id).ToList());
 
                     BasicdataFactoryaddress BasicdataFactoryaddress;
                     Basicdatagroup Basicdatagroup;
@@ -631,6 +653,7 @@ namespace Project.Controllers
             {
                 var Energyuses = _MyDbContext.Energyuses.Where(a => a.BasicId == id);//抓取該id的能源使用
                 var a = _MyDbContext.Basicdatas.Find(id);//依盤查表名稱設定檔案存取路徑
+                ViewBag.BasicDataStatus = BasicDataStatus(id);
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -734,6 +757,7 @@ namespace Project.Controllers
             {
                 var Resourceuses = _MyDbContext.Resourceuses.Where(a => a.BasicId == id);//抓取該id的能源使用
                 var a = _MyDbContext.Basicdatas.Find(id);//依盤查表名稱設定檔案存取路徑
+                ViewBag.BasicDataStatus = BasicDataStatus(id);
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -848,6 +872,7 @@ namespace Project.Controllers
             {
                 var RefrigerantHaves = _MyDbContext.RefrigerantHaves.Where(a => a.BasicId == id);//抓取該id的冷媒逸散(有)
                 var a = _MyDbContext.Basicdatas.Find(id);//依盤查表名稱設定檔案存取路徑
+                ViewBag.BasicDataStatus = BasicDataStatus(id);
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -933,6 +958,7 @@ namespace Project.Controllers
             {
                 var RefrigerantNones = _MyDbContext.RefrigerantNones.Where(a => a.BasicId == id);//抓取該id的冷媒逸散(有)
                 var a = _MyDbContext.Basicdatas.Find(id);//依盤查表名稱設定檔案存取路徑
+                ViewBag.BasicDataStatus = BasicDataStatus(id);
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -1021,6 +1047,7 @@ namespace Project.Controllers
             {
                 var Fireequipment = _MyDbContext.Fireequipments.Where(a => a.BasicId == id);//抓取該id的消防
                 var a = _MyDbContext.Basicdatas.Find(id);//依盤查表名稱設定檔案存取路徑
+                ViewBag.BasicDataStatus = BasicDataStatus(id);
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -1112,6 +1139,7 @@ namespace Project.Controllers
         {
             try
             {
+                ViewBag.BasicDataStatus = BasicDataStatus(id);
 
                 ViewBag.basicid = id;//給input存取
                 ViewBag.Factory = _MyDbContext.BasicdataFactoryaddresses.Where(a => a.BasicId == id && (a.WherePlace == "CheckField" || a.WherePlace == "OutsideCheckField")).ToList();//廠址
@@ -1224,6 +1252,7 @@ namespace Project.Controllers
             {
                 var DumptreatmentOutsourcings = _MyDbContext.DumptreatmentOutsourcings.Where(a => a.BasicId == id);//抓取該id的空水廢排放
                 var a = _MyDbContext.Basicdatas.Find(id);//依盤查表名稱設定檔案存取路徑
+                ViewBag.BasicDataStatus = BasicDataStatus(id);
 
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -1377,7 +1406,7 @@ namespace Project.Controllers
                     Workinghours_Item_4 = Workinghours_Item_4,
                     Fireequipment = Fireequipment,
                     DumptreatmentOutsourcing = DumptreatmentOutsourcing,
-                    BasicdataFactoryaddresses= BasicdataFactoryaddresses
+                    BasicdataFactoryaddresses = BasicdataFactoryaddresses
 
                 };
                 return View(viewModel);
@@ -1518,6 +1547,20 @@ namespace Project.Controllers
                 return Error("內部伺服器錯誤"); // 或其他適當的錯誤訊息
             }
 
+        }
+
+        public string BasicDataStatus(int? id)
+        {
+            var organize = _MyDbContext.Organizes.Where(a => a.BasicId == id && a.Account == AccountId()).FirstOrDefault();
+            if (organize != null)
+            {
+                return organize.Status;
+            }
+            else
+            {
+                return "";
+
+            }
         }
     }
 }

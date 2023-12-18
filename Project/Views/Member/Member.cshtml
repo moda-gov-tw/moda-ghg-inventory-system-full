@@ -75,8 +75,8 @@
 
     </script>
     <style>
-        span {
-            color: red;
+        span{
+            color:red;
         }
     </style>
 }
@@ -92,7 +92,7 @@
                     <div class="form-group">
                         <span style='color: red;'>*</span><label class="control-label">帳號</label>
                         <input asp-for="Account" class="form-control" oninput="validateInput(this)"
-                               value="@Model.Account" disabled />
+                            value="@Model.Account" disabled />
                         <span id="Account" class="text-danger"></span>
                     </div>
                 </div>
@@ -142,21 +142,42 @@
                     <div class="form-group">
                         <label class="control-label" value="@Model.OfficeLocation">科別</label>
                         <input asp-for="OfficeLocation" id="OfficeLocation" class="form-control"
-                               value="@Model.OfficeLocation" />
+                            value="@Model.OfficeLocation" />
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label class="control-label" value="@Model.UserType">用戶類型 </label>
-                        <div>
-                            <label class="form-check-label">
-                                <input asp-for="UserType" id="UserType" type="radio" value="其他"
-                                       name="UserType" checked />其他
-                            </label>
+                        </span><label class="control-label" value="@Model.UserType">用戶類型 </label>
+                        @if (Model.UserType == "數位部")
+                        {
+                            <div>
+                            <label class="form-check-label"><input asp-for="UserType" id="UserType" type="radio" value="數位部"
+                                    name="UserType" checked />數位部</label>
+                            <label class="form-check-label"> <input asp-for="UserType" id="UserType" type="radio" value="其他"
+                                    name="UserType" />一般</label>
+                                    </div>
+                        }
+                        else if (Model.UserType == "其他")
+                        {
+                            <div>
+                            <label class="form-check-label"> <input asp-for="UserType" id="UserType" type="radio"
+                                    value="數位部" name="UserType" />數位部</label>
+                            <label class="form-check-label"><input asp-for="UserType" id="UserType" type="radio" value="其他"
+                                    name="UserType" checked />一般</label>
+                                    </div>
+                        }
+                        else
+                        {
+                            <div>
+                            <label class="form-check-label"> <input asp-for="UserType" id="UserType" type="radio"
+                                    value="數位部" name="UserType" />數位部</label>
+                            <label class="form-check-label"><input asp-for="UserType" id="UserType" type="radio" value="其他"
+                                    name="UserType" />一般</label>
+                            </div>
+                        } 
                         </div>
-                    </div>
                 </div>
-                <div class="col-md-12">
+            <div class="col-md-12">
                     <div class="form-group" style="text-align:center">
                         <input type="submit" value="修改" class="btn btn-primary" style="width:200px" />
                     </div>
@@ -164,4 +185,4 @@
             </div>
         </form>
     </div>
-</div>
+</div

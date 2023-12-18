@@ -1,7 +1,10 @@
 ﻿using Project.Common;
+using Project.Models;
 using MailKit.Net.Smtp;
+using MailKit.Security;
 using MimeKit;
 using MimeKit.Text;
+using System.Net.Sockets;
 
 namespace Project.Common
 {
@@ -184,7 +187,7 @@ namespace Project.Common
 
                 //Smtp伺服器
                 //client.Connect("smtp.qq.com", 587, false);
-                client.Connect(Smtp, Port, true);
+                client.Connect(Smtp, Port, SecureSocketOptions.None);
                 //登入，發送
                 //特別說明，對於伺服器端的中文相應，Exception中有編碼問題，顯示亂碼了
                 client.Authenticate(FromEmail, FromPwd);
@@ -196,6 +199,16 @@ namespace Project.Common
             }
             catch (Exception ex)
             {
+                MyDbContext myDb = new MyDbContext();
+                var Log = new Log()
+                {
+                    WhereFunction = "MailHelper_service",
+                    Exception = ex.ToString(),
+                    DateTime = DateTime.Now,
+                };
+                myDb.Logs.Add(Log);
+                myDb.SaveChanges();
+                Log = null;
                 // LogHelper.WriteError(ex, "發送郵件異常");
             }
         }

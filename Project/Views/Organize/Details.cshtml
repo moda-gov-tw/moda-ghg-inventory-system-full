@@ -35,7 +35,7 @@
     }
 
     .text-right {
-        text-align: right;
+        text-align:right;
     }
 </style>
 <script nonce="@nonce">
@@ -112,8 +112,21 @@
                                 </td>
 
                                 <td>
-                                    <button class="genbtnS"><a class="text-dark" asp-action="BasicData" asp-route-id="@item.BasicId">編輯</a></button>
-                                    <button class="genbtnS-danger"><a class="text-dark delete-button" href="javascript:void(0);" id="@item.BasicId" data-basicid="@item.BasicId" data-inventory="@item.Inventory">刪除</a></button>
+                                        @if (item.Status == "通過" || item.Status == "待簽核")
+                                        {
+                                            <button class="genbtnS"><a class="text-dark"  asp-action="BasicData" asp-route-id="@item.BasicId">查看</a></button>
+                                            if (item.Status == "待簽核")
+                                            {
+                                            <button class="genbtnS"><a class="text-dark RevokeSignOff-btn" href="javascript:void(0);" data-basicid="@item.BasicId" data-inventory="@item.Inventory">撤回簽核</a></button>
+                                            }
+                                        }
+                                        else
+                                        {
+                                        <button class="genbtnS"><a class="text-dark" asp-action="BasicData" asp-route-id="@item.BasicId">編輯</a></button>
+                                        <button class="genbtnS-danger"><a class="text-dark delete-button" href="javascript:void(0);" id="@item.BasicId" data-basicid="@item.BasicId" data-inventory="@item.Inventory">刪除</a></button>
+
+
+                                        }
                                 </td>
                                 <td>
                                     <button class="genbtnS"><a class="text-dark ViewBasicdata-btn" href="javascript:void(0);" id="@item.BasicId" data-basicid="@item.BasicId">查看</a></button>
@@ -176,7 +189,7 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
         <script>
 
-        </script>
+            </script>
     }
     <script nonce="@nonce" src="~/js/init-magnificPopup.js"></script>
     <script nonce="@nonce">

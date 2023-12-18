@@ -222,6 +222,10 @@ tbody tr:nth-child(odd) td {
     width:40px;
     height:40px;
 }
+.QuestionMarkSmall {
+    width: 20px;
+    height: 20px;
+}
 
 .navbar {
     padding-top: 0;
@@ -710,4 +714,16 @@ a {
     }
 }
 
-
+.fileTypeI {
+    display: inline-block;
+    background-color: yellow;
+    font-size: 0.72em;
+    border: 1px solid var(--md-primary-1);
+    text-align: center;
+    line-height: 1.334;
+    padding: 0.1em 0.65em;
+    margin: -0.21em 0 0 0.6em;
+    vertical-align: middle;
+    border-radius: 1rem;
+    font-weight: 400
+}

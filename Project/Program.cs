@@ -56,15 +56,13 @@ app.UseAuthorization();
 
 app.Use(async (context, next) =>
 {
-    var hicos = AppSetting.GetValue("HiCOS:Switch");
-    context.Session.SetString("HiCOS_TF", hicos=="1"?"true":"false");
 
-    #region CSP標頭設置
-    var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-    context.Items["CSPNonce"] = nonce;
-    #endregion
+#region CSP標頭設置
+var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+context.Items["CSPNonce"] = nonce;
+#endregion
 
-    await next();
+await next();
 });
 
 app.MapControllerRoute(
@@ -96,4 +94,3 @@ public class RemoveServerHeaderMiddleware
     }
 }
 #endregion
-

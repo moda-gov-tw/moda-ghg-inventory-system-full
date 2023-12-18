@@ -187,7 +187,17 @@
                 </div>
                   <div class="col-md-4">
                 <div class="form-group">
-                    <span style='color: red;'>*</span><label class="control-label">密碼(組成須包含英文大寫小寫、數字及特殊符號)</label>
+                        <span style='color: red;'>*</span>
+                            密碼
+                            <label class="tooltips">
+                                @*懸浮文字文字*@
+                                <img src="~/Img/QuestionMark.png" class="QuestionMarkSmall" />
+
+                                <span class="tooltips-text">
+                                    規則:須包含1符號+1大寫英+1小寫英+1數字，最少6字元，最多18字元)
+                                </span>
+
+                            </label>
                         <input asp-for="Passwd" class="form-control" type="password" autocomplete="off" />
                     <span asp-validation-for="Passwd" class="text-danger"></span>
                 </div></div>
@@ -208,8 +218,7 @@
                     <span style='color: red;'>*</span><label class="control-label">驗證碼</label>
                         <input name="captchaCode" class="form-control" id="vercode" type="text" autocomplete="off" /><button class="btn btn-primary genbtn" id="btnOK" type="button" hidden>認證</button>
                         <input name="verId" id="verId" class="verId form-control" type="text" hidden />
-                    </div>
-                </div>
+                </div></div>
                   <div class="col-md-4">
                 <div class="form-group">
                     <span style='color: red;'>*</span><label class="control-label">姓名</label>
@@ -239,14 +248,14 @@
                     <label class="control-label">公司名稱</label>
                         <input asp-for="CompanyName" class="form-control" autocomplete="off" />
                     <span asp-validation-for="CompanyName" class="text-danger"></span>
-                </div>
-                </div>
+                </div></div>
                   <div class="col-md-4">
                 <div class="form-group">
                     <span style='color: red;'>*</span><label class="control-label">用戶類型</label>
                     <div class="row">
+
                     <div class="col-md-6">
-                        <input asp-for="UserType" type="radio" value="其他" name="UserType" checked/>
+                        <input asp-for="UserType" type="radio" value="其他" name="UserType" />
                         <label class="form-check-label">其他</label>
                     </div>
                     <span asp-validation-for="UserType" class="text-danger"></span>
